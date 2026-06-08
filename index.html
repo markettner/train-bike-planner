@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Train + Bike — Berlin Tour Planner</title>
+  <meta name="description" content="Plan combined train and bike tours from Berlin. Find the perfect starting station for your desired cycling distance." />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+
+  <!-- Map container -->
+  <div id="map"></div>
+
+
+
+  <!-- Control panel (top-left) -->
+  <div id="control-panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="title-train">🚆</span>
+        <span class="title-bike">🚲</span>
+        <span class="title-text">Train + Bike</span>
+      </div>
+      <button id="panel-collapse-btn" class="icon-btn" title="Collapse panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+      </button>
+    </div>
+
+    <div id="panel-body">
+      <!-- Home location -->
+      <div class="control-group">
+        <label class="control-label">📍 Starting point</label>
+        <div class="location-display">
+          <span id="home-location-name">Detecting location…</span>
+          <button id="set-location-btn" class="small-btn">Change</button>
+        </div>
+        <p class="control-hint" id="location-hint">Click on the map to set a custom starting point</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Distance -->
+      <div class="control-group">
+        <label class="control-label" for="distance-slider">
+          Bike distance
+          <span class="control-value"><input type="number" id="distance-input" value="50" min="20" max="200" />km</span>
+        </label>
+        <input type="range" id="distance-slider" min="20" max="200" value="50" step="5" />
+        <div class="slider-labels">
+          <span>20 km</span>
+          <span>200 km</span>
+        </div>
+      </div>
+
+      <!-- Tolerance -->
+      <div class="control-group">
+        <label class="control-label" for="tolerance-slider">
+          Tolerance
+          <span class="control-value">±<input type="number" id="tolerance-input" value="5" min="2" max="30" />km</span>
+        </label>
+        <input type="range" id="tolerance-slider" min="2" max="30" value="5" step="1" />
+      </div>
+
+      <!-- Toggle soft matches -->
+      <div class="control-group flex-row">
+        <span class="control-label" style="margin-bottom: 0;">Include nearby matches</span>
+        <label class="switch">
+          <input type="checkbox" id="soft-matches-toggle" checked />
+          <span class="slider-toggle"></span>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Train Ride Time -->
+      <div class="control-group">
+        <label class="control-label">🕒 Train Ride Time</label>
+        <div class="datetime-inputs">
+          <input type="date" id="journey-date" style="flex: 1.2;" />
+          <input type="time" id="journey-time" style="flex: 0.8;" />
+        </div>
+        <div class="time-type-selector">
+          <label class="time-type-option">
+            <input type="radio" name="time-type" value="departure" id="time-type-departure" checked />
+            <span class="radio-label">Depart Home</span>
+          </label>
+          <label class="time-type-option">
+            <input type="radio" name="time-type" value="arrival" id="time-type-arrival" />
+            <span class="radio-label">Arrive at Station</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Bike profile -->
+      <div class="control-group">
+        <label class="control-label">Bike profile</label>
+        <div class="profile-selector" id="profile-selector">
+          <button class="profile-btn active" data-profile="trekking" id="profile-trekking">
+            <span class="profile-icon">🚲</span>
+            <span class="profile-name">Trekking</span>
+          </button>
+          <button class="profile-btn" data-profile="fastbike" id="profile-fastbike">
+            <span class="profile-icon">🚴</span>
+            <span class="profile-name">Road bike</span>
+          </button>
+          <button class="profile-btn" data-profile="gravel" id="profile-gravel">
+            <span class="profile-icon">🚵</span>
+            <span class="profile-name">Gravel bike</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Calculate button -->
+      <button id="calculate-btn" class="calculate-btn">
+        <span id="calculate-btn-text">Find Routes</span>
+        <span id="calculate-btn-spinner" class="btn-spinner hidden"></span>
+      </button>
+
+      <!-- Export all -->
+      <button id="export-all-btn" class="secondary-btn hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export all routes as GPX
+      </button>
+    </div>
+  </div>
+
+  <!-- Route list sidebar (right) -->
+  <div id="route-sidebar" class="hidden">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <span id="route-count">0 routes found</span>
+      </div>
+      <div class="sidebar-actions">
+        <select id="sort-select" class="sort-select">
+          <option value="distance">Sort by distance</option>
+          <option value="name">Sort by line</option>
+        </select>
+        <button id="sidebar-close-btn" class="icon-btn" title="Close sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+    <div id="route-list"></div>
+  </div>
+
+  <!-- Route details panel -->
+  <div id="route-details-panel" class="hidden">
+    <div class="panel-header-details">
+      <span id="route-details-name">Route details</span>
+      <button id="route-details-close-btn" class="icon-btn small" title="Close details">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="dashboard-body">
+      <!-- Train connection column -->
+      <div id="train-details-column">
+        <div id="train-legs-timeline">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar toggle (when sidebar is closed but routes exist) -->
+  <button id="sidebar-toggle-btn" class="sidebar-toggle hidden" title="Show routes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    <span id="sidebar-toggle-count">0</span>
+  </button>
+
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>
