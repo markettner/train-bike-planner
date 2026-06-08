@@ -53,7 +53,7 @@ export function initMap(options = {}) {
 
   // Light tile layer (Custom styled OpenFreeMap vector style)
   const lightTiles = L.maplibreGL({
-    style: '/map-style.json',
+    style: `${import.meta.env.BASE_URL}map-style.json`,
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://openfreemap.org">OpenFreeMap</a>',
   });
 

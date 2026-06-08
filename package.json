@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && mkdir -p dist/data && cp data/lines.json data/station_mappings.json dist/data/",
     "preview": "vite preview",
     "fetch-data": "node data/fetch-stations.js"
   },

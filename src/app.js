@@ -108,7 +108,7 @@ async function handleHomeChange(coords) {
 
 async function loadLinesData() {
   try {
-    const res = await fetch('/data/lines.json');
+    const res = await fetch(`${import.meta.env.BASE_URL}data/lines.json`);
     linesData = await res.json();
     // Draw train lines on map immediately
     if (linesData?.lines) {
@@ -122,7 +122,7 @@ async function loadLinesData() {
 
 async function loadStationMappings() {
   try {
-    const res = await fetch('/data/station_mappings.json');
+    const res = await fetch(`${import.meta.env.BASE_URL}data/station_mappings.json`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const mappings = await res.json();
     setStationMappings(mappings);
