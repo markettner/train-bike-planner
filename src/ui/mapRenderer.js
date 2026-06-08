@@ -126,7 +126,7 @@ export function setHomeMarker(coords) {
 
   const icon = L.divIcon({
     className: 'home-marker',
-    html: '🏠',
+    html: '<span class="home-marker-emoji">🏠</span>',
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });

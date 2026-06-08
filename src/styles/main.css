@@ -1194,8 +1194,16 @@ input[type="range"]::-moz-range-track {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  padding: 0;
+}
+
+.home-marker-emoji {
+  display: block;
   font-size: 15px;
-  line-height: 1 !important;
+  line-height: 1;
+  text-align: center;
+  width: 100%;
+  margin: 0;
   padding: 0;
 }
 
