@@ -6,6 +6,20 @@
   <title>Train + Bike — Berlin Tour Planner</title>
   <meta name="description" content="Plan combined train and bike tours from Berlin. Find the perfect starting station for your desired cycling distance." />
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://markuskettner.github.io/train-bike-planner/" />
+  <meta property="og:title" content="Train + Bike — Berlin Tour Planner" />
+  <meta property="og:description" content="Instead of having to cycle loops every time, Train + Bike helps you find cycle routes that start at a train station outside the city and then cycle back home. You define your target cycling distance and the route profile, and the app finds train connections to take you to the perfect starting point." />
+  <meta property="og:image" content="https://markuskettner.github.io/train-bike-planner/train+bike_1200x630.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://markuskettner.github.io/train-bike-planner/" />
+  <meta property="twitter:title" content="Train + Bike — Berlin Tour Planner" />
+  <meta property="twitter:description" content="Instead of having to cycle loops every time, Train + Bike helps you find cycle routes that start at a train station outside the city and then cycle back home. You define your target cycling distance and the route profile, and the app finds train connections to take you to the perfect starting point." />
+  <meta property="twitter:image" content="https://markuskettner.github.io/train-bike-planner/train+bike_1200x630.png" />
+
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -73,7 +87,7 @@
 
       <!-- Toggle soft matches -->
       <div class="control-group flex-row">
-        <span class="control-label" style="margin-bottom: 0;">Include nearby matches</span>
+        <span class="control-label" style="margin-bottom: 0;">Include additional routes</span>
         <label class="switch">
           <input type="checkbox" id="soft-matches-toggle" checked />
           <span class="slider-toggle"></span>
@@ -135,6 +149,67 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         Export all routes as GPX
       </button>
+    </div>
+  </div>
+
+  <!-- Help panel (top-left, next to control panel) -->
+  <div id="help-panel" class="collapsed">
+    <!-- Trigger Button (Visible only when collapsed) -->
+    <div id="help-trigger">
+      <span>❓</span>
+      <span>Help</span>
+    </div>
+
+    <!-- Expanded content (Visible only when expanded) -->
+    <div id="help-content">
+      <div class="panel-header" style="padding: 14px 16px 10px;">
+        <div class="panel-title" style="display: flex; align-items: center; gap: 6px;">
+          <span class="title-train">❓</span>
+          <span class="title-text">How to use Train + Bike</span>
+        </div>
+        <button id="help-close-btn" class="icon-btn" title="Close help">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div id="help-grid">
+        <div class="help-col">
+          <div class="help-section" style="padding-top: 6px;">
+            <p>Instead of having to cycle loops every time, Train + Bike helps you find cycle routes that start at a train station outside the city and then cycle back home. You define your target cycling distance and the route profile, and the app finds train connections to take you to the perfect starting point.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>Route Settings</h3>
+            <ul>
+              <li><strong>Distance & Tolerance:</strong> Set your preferred bike ride distance and tolerance. The app matches stations whose cycle route back home sits within this range.</li>
+              <li><strong>Bike Profiles:</strong> Select Trekking, Road bike, or Gravel bike to use customized routing preferences and travel time estimates.</li>
+              <li><strong>Additional Routes:</strong> Toggle to see routes slightly outside your search settings. These soft matches will be along other train lines and are shown as translucent, faded lines on the map and have dashed borders in the sidebar.</li>
+              <li><strong>Train Line Overlay:</strong> Toggle the background rail network overlay using the 🚆 button above the zoom controls (bottom-left).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="help-col">
+          <div class="help-section">
+            <h3>Route Sidebar</h3>
+            <ul>
+              <li><strong>Merged Lines:</strong> Multiple train lines serving the same station are combined on a single card to keep the list clean.</li>
+              <li><strong>Travel Time & Frequency:</strong> Shows transit duration and how frequently trains run (e.g. Hourly, Frequent, or 2h intervals).</li>
+              <li><strong>Utilization Badges:</strong> Displays live passenger occupancy expectations (Low, Medium, or Packed ⚠️).</li>
+              <li><strong>Locked Routes:</strong> Fallbacks requiring a bus transfer (where bicycles are generally restricted) are marked with black-and-yellow hazard warning stripes.</li>
+            </ul>
+          </div>
+
+          <div class="help-section">
+            <h3>Details & GPX Export</h3>
+            <ul>
+              <li><strong>Connection Timelines:</strong> Click any card to see transfer steps, platforms, connection times, and live disruption guidance (critical warnings for cancelled regional services).</li>
+              <li><strong>Alternative Departures:</strong> Lists upcoming departures and highlights emptier connections with a "Recommended" badge when their occupancy is lower.</li>
+              <li><strong>GPX Export:</strong> Save a cycle route using the download icon on a card, or click "Export all routes as GPX" in the settings panel to download all candidate paths together in a single multi-track GPX file.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

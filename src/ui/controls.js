@@ -126,6 +126,21 @@ export function initControls(options = {}) {
     panelCollapseBtn.style.transform = collapsed ? 'rotate(180deg)' : '';
   });
 
+  // --- Collapse/Expand Help panel ---
+  const helpPanel = document.getElementById('help-panel');
+  const helpCloseBtn = document.getElementById('help-close-btn');
+
+  helpPanel?.addEventListener('click', () => {
+    if (helpPanel.classList.contains('collapsed')) {
+      helpPanel.classList.remove('collapsed');
+    }
+  });
+
+  helpCloseBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    helpPanel?.classList.add('collapsed');
+  });
+
   // --- Public API ---
   return {
     setCalculating(isCalc, progress = null) {

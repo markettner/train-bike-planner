@@ -79,6 +79,7 @@ export function appendResult(result, index) {
 
   sidebar.classList.remove('hidden');
   toggleBtn.classList.add('hidden');
+  exportAllBtn?.classList.remove('hidden');
 }
 
 /**
@@ -92,7 +93,7 @@ export function clearSidebar() {
   toggleCount.textContent = '0';
   sidebar.classList.add('hidden');
   toggleBtn.classList.add('hidden');
-  exportAllBtn.classList.add('hidden');
+  exportAllBtn?.classList.add('hidden');
 }
 
 /**
@@ -101,6 +102,9 @@ export function clearSidebar() {
  */
 export function finalizeSidebar() {
   renderList(allResults);
+  if (allResults.length > 0) {
+    exportAllBtn?.classList.remove('hidden');
+  }
 }
 
 // --- Internal ---
