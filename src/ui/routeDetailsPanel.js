@@ -137,10 +137,9 @@ export function populateTrainTimeline(result, stationName, containerEl) {
   html += `</div>`; // End legs list
   html += `</div>`; // End left column
 
-  // --- RIGHT COLUMN: Service Frequency & Alternatives ---
-  html += `<div class="details-frequency-col">`;
-
+  // --- RIGHT COLUMN: Service Frequency & Alternatives (only if data exists) ---
   if (trainStats.frequency) {
+    html += `<div class="details-frequency-col">`;
     html += `
       <div class="frequency-panel">
         <div class="frequency-panel-header">
@@ -189,9 +188,9 @@ export function populateTrainTimeline(result, stationName, containerEl) {
     }
 
     html += `</div>`; // End frequency-panel
+    html += `</div>`; // End right column
   }
 
-  html += `</div>`; // End right column
   html += `</div>`; // End details-layout
 
   columnEl.innerHTML = html;

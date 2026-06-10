@@ -15,7 +15,7 @@ import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFin
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
 import { clearCache, setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
 import { showRouteDetails } from './ui/routeDetailsPanel.js';
-import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRouteDetails as mobileShowDetails, showSettings as mobileShowSettings, startSearchMode, updateSearchProgress } from './ui/mobileSheet.js';
+import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRouteDetails as mobileShowDetails, showSettings as mobileShowSettings, startSearchMode, updateSearchProgress, collapseForLocationPick } from './ui/mobileSheet.js';
 
 // Default: Alexanderplatz, Berlin
 const DEFAULT_HOME = { lat: 52.5219, lon: 13.4132, name: 'Alexanderplatz, Berlin' };
@@ -38,7 +38,10 @@ async function main() {
   // 2. Initialize controls
   controls = initControls({
     onCalculate: handleCalculate,
-    onSetHomeClick: () => setHomePickerMode(true),
+    onSetHomeClick: () => {
+      setHomePickerMode(true);
+      collapseForLocationPick(); // on mobile: collapse sheet, show tap hint
+    },
     onSoftMatchesToggle: (showSoft) => filterSoftMatches(showSoft),
     onRequestGps: detectLocation,
   });
@@ -129,6 +132,11 @@ function setHome(coords) {
 async function handleHomeChange(coords) {
   const name = await reverseGeocode(coords);
   setHome({ ...coords, name });
+  // On mobile: re-open the settings sheet so user can continue to Find Routes
+  if (isMobile()) {
+    const { expand } = await import('./ui/mobileSheet.js');
+    expand();
+  }
 }
 
 // --- Load Data ---

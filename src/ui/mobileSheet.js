@@ -85,10 +85,10 @@ export function initMobileSheet({ onNewSearch: _onNewSearch, onBack: _onBack } =
   `;
   document.body.appendChild(progressPill);
 
-  // Start with settings sheet fully open on first visit
+  // Start at peek — map is visible on load, user taps to configure
   peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`;
   showView('settings');
-  snapTo(EXPAND_HEIGHT);
+  snapTo(null);
 
   // Wire drag gesture
   initDrag();
@@ -175,6 +175,26 @@ export function collapse() {
 export function expand() {
   if (!isMobile() || !isInitialized) return;
   snapTo(EXPAND_HEIGHT);
+}
+
+/**
+ * Collapse to peek and signal that the user is picking a map location.
+ * The map gets a tap-to-set-home overlay via body.picking-location CSS.
+ */
+export function collapseForLocationPick() {
+  if (!isMobile() || !isInitialized) return;
+  peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Tap map to set location`;
+  snapTo(null);
+  document.body.classList.add('picking-location');
+
+  // Clear the picking state once the map is clicked (location set)
+  const clear = () => {
+    document.body.classList.remove('picking-location');
+    peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`;
+    window.removeEventListener('pointerdown', clear);
+  };
+  // Give a tick before attaching so the current tap doesn't immediately clear it
+  setTimeout(() => window.addEventListener('pointerdown', clear, { once: true }), 200);
 }
 
 /**

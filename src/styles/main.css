@@ -2398,6 +2398,32 @@ body.sidebar-open #route-details-panel {
     transition: width 0.3s ease;
   }
 
+  /* --- Location picking state --- */
+  /* Shown when user taps Change/GPS to set a custom start point */
+  body.picking-location #map {
+    cursor: crosshair;
+  }
+
+  /* Floating badge above the peek strip */
+  body.picking-location #mobile-sheet::before {
+    content: '📍 Tap anywhere on the map to set your start';
+    position: absolute;
+    top: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: var(--accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    pointer-events: none;
+    z-index: 1100;
+    animation: peekBounce 1.8s ease-in-out infinite;
+  }
+
   /* --- Mobile Help button + modal --- */
   /* Help button tracks the sheet bottom */
   .mobile-help-btn {
