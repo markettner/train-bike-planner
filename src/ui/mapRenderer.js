@@ -305,9 +305,11 @@ export function selectRoute(resultId) {
       stationMarker.getTooltip()?.setOpacity(0.9);
     }
 
-    // Fly to bounds
+    // Fly to bounds with bottom padding for mobile sheet
     const bounds = polyline.getBounds();
-    map.flyToBounds(bounds, { padding: [60, 60], maxZoom: 12, duration: 0.8 });
+    const isMob = window.matchMedia('(max-width: 768px)').matches;
+    const padding = isMob ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
+    map.flyToBounds(bounds, { padding, maxZoom: 12, duration: 0.8 });
   }
 }
 
@@ -356,7 +358,9 @@ export function fitToRoutes() {
   routeLayers.forEach(({ polyline }) => bounds.extend(polyline.getBounds()));
   if (homeMarker) bounds.extend(homeMarker.getLatLng());
   if (bounds.isValid()) {
-    map.flyToBounds(bounds, { padding: [60, 60], duration: 1.2 });
+    const isMob = window.matchMedia('(max-width: 768px)').matches;
+    const padding = isMob ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
+    map.flyToBounds(bounds, { padding, duration: 1.2 });
   }
 }
 

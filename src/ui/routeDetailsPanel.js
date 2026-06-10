@@ -3,11 +3,22 @@
  * Displays train connection details for a selected route.
  */
 
+import { isMobile } from './mobileSheet.js';
+import { showRouteList } from './mobileSheet.js';
+
 const panel = document.getElementById('route-details-panel');
 const routeNameEl = document.getElementById('route-details-name');
 const closeBtn = document.getElementById('route-details-close-btn');
 
-closeBtn?.addEventListener('click', hide);
+closeBtn?.addEventListener('click', () => {
+  if (isMobile()) {
+    // On mobile: navigate back to the route list
+    document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
+    showRouteList();
+  } else {
+    hide();
+  }
+});
 
 /**
  * Show the train connection details for the selected route.
@@ -25,8 +36,10 @@ export function showRouteDetails(result) {
   // Populate VBB train details timeline
   populateTrainTimeline(result, result.station.name);
 
-  // Show panel
-  panel?.classList.remove('hidden');
+  // Show panel — on mobile the sheet reveals it; on desktop show the fixed panel
+  if (!isMobile()) {
+    panel?.classList.remove('hidden');
+  }
 }
 
 /**
@@ -36,8 +49,8 @@ export function hide() {
   panel?.classList.add('hidden');
 }
 
-function populateTrainTimeline(result, stationName) {
-  const columnEl = document.getElementById('train-details-column');
+export function populateTrainTimeline(result, stationName, containerEl) {
+  const columnEl = containerEl || document.getElementById('train-details-column');
   if (!columnEl) return;
 
   const trainStats = result?.trainStats;
@@ -45,8 +58,8 @@ function populateTrainTimeline(result, stationName) {
 
   if (status === 'loading') {
     columnEl.innerHTML = `
-      <div class="train-loading-spinner-container" style="color: var(--text-muted); font-style: italic; padding: 30px 0; font-size: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-        <div class="btn-spinner" style="width: 20px; height: 20px; border-width: 2px; border-color: rgba(77, 159, 255, 0.2); border-top-color: var(--accent);"></div>
+      <div class="details-loading-container">
+        <div class="btn-spinner details-loading-spinner"></div>
         <span>Fetching live train connection details…</span>
       </div>
     `;
@@ -55,7 +68,7 @@ function populateTrainTimeline(result, stationName) {
 
   if (status === 'failed' || !trainStats || !trainStats.legs || trainStats.legs.length === 0) {
     columnEl.innerHTML = `
-      <div style="color: var(--text-muted); font-style: italic; padding: 20px 0; font-size: 12px; text-align: center;">
+      <div class="details-unavailable-message">
         ${status === 'failed' ? '⚠️ Live train connection details unavailable (APIs offline)' : 'No train connections found for this time.'}
       </div>
     `;
@@ -67,121 +80,104 @@ function populateTrainTimeline(result, stationName) {
   // 1. Cancellation Guidance (if any, full width at the top)
   if (trainStats.cancellations && trainStats.cancellations.hasCancelledLeg) {
     const isCritical = trainStats.cancellations.isCritical;
-    const alertBg = isCritical ? 'rgba(231, 76, 60, 0.12)' : 'rgba(241, 196, 15, 0.08)';
-    const alertBorder = isCritical ? 'rgba(231, 76, 60, 0.3)' : 'rgba(241, 196, 15, 0.2)';
-    const alertColor = isCritical ? '#ff6b6b' : '#f1c40f';
-    
     html += `
-      <div style="background: ${alertBg}; border: 1px solid ${alertBorder}; border-radius: 8px; padding: 10px; font-size: 11px; line-height: 1.4; color: ${alertColor}; margin-bottom: 10px; font-weight: 500; width: 100%;">
+      <div class="cancellation-alert${isCritical ? ' critical' : ''}">
         ${trainStats.cancellations.guidance}
       </div>
     `;
   }
 
   // 2. Horizontal Two-Column Layout
-  html += `<div style="display: flex; gap: 16px; width: 100%; align-items: stretch;">`;
+  html += `<div class="details-layout">`;
 
   // --- LEFT COLUMN: Journey Timeline ---
-  html += `<div style="flex: 1.1; display: flex; flex-direction: column; gap: 6px; min-width: 0;">`;
-  
-  // Summary header for Left Column
+  html += `<div class="details-timeline-col">`;
+
+  // Summary header
   const occupancyLabel = trainStats.occupancy === 'high' ? 'Packed Train Warning ⚠️' : `${trainStats.occupancy} occupancy`;
-  const occupancyColor = trainStats.occupancy === 'high' ? 'var(--danger)' : (trainStats.occupancy === 'medium' ? 'var(--accent)' : 'var(--success)');
-  
+  const occupancyClass = trainStats.occupancy === 'high' ? 'occupancy-high' : (trainStats.occupancy === 'medium' ? 'occupancy-med' : 'occupancy-low');
+
   html += `
-    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; border-bottom: 1px dashed var(--border-glass); padding-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-      <span style="color: var(--text-secondary);">${trainStats.transfers === 0 ? 'Direct ride' : `${trainStats.transfers} transfer${trainStats.transfers > 1 ? 's' : ''}`}</span>
-      <span style="color: ${occupancyColor};">${occupancyLabel}</span>
+    <div class="details-summary-header">
+      <span class="details-transfers-label">${trainStats.transfers === 0 ? 'Direct ride' : `${trainStats.transfers} transfer${trainStats.transfers > 1 ? 's' : ''}`}</span>
+      <span class="details-occupancy-label ${occupancyClass}">${occupancyLabel}</span>
     </div>
   `;
 
-  // Timeline list (scrollable if many legs)
-  html += `<div id="train-legs-timeline" style="display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 160px; padding-right: 4px;">`;
+  // Timeline legs
+  html += `<div class="details-legs-list">`;
   trainStats.legs.forEach(leg => {
     const isWalking = leg.lineName === 'Walk' || !leg.depTime;
     const badgeBg = leg.lineColor?.bg || '#888';
     const badgeFg = leg.lineColor?.fg || '#fff';
     const isCancelled = leg.cancelled === true;
-    const strikeStyle = isCancelled ? 'text-decoration: line-through; opacity: 0.6;' : '';
-    
+
     html += `
-      <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px 8px; background: ${isCancelled ? 'rgba(231, 76, 60, 0.05)' : 'rgba(255,255,255,0.02)'}; border-radius: 4px; border: 1px solid ${isCancelled ? 'rgba(231, 76, 60, 0.2)' : 'var(--border-glass)'};">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="background:${badgeBg}; color:${badgeFg}; padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 9px; text-transform: uppercase; ${strikeStyle}">
-              ${leg.lineName}
-            </span>
-            ${isCancelled ? '<span style="color: var(--danger); font-weight: 800; font-size: 9px; text-transform: uppercase;">Cancelled ❌</span>' : ''}
+      <div class="timeline-leg${isCancelled ? ' cancelled' : ''}">
+        <div class="leg-header">
+          <div class="leg-header-left">
+            <span class="leg-badge" style="background:${badgeBg}; color:${badgeFg};">${leg.lineName}</span>
+            ${isCancelled ? '<span class="leg-cancelled-label">Cancelled ❌</span>' : ''}
           </div>
-          <span style="font-size: 10px; color: var(--text-muted); font-weight: 500; ${strikeStyle}">${leg.duration} min</span>
+          <span class="leg-duration">${leg.duration} min</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11px; margin-top: 2px;">
-          <div style="display: flex; justify-content: space-between; ${strikeStyle}">
-            <span style="color: var(--text-primary); font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 170px;">➔ ${leg.originName}</span>
-            <span style="font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; font-size: 11px;">
-              ${leg.depTime} ${leg.depPlatform ? `[Pl. ${leg.depPlatform}]` : ''}
-            </span>
+        <div class="leg-stops">
+          <div class="leg-stop-row">
+            <span class="leg-stop-name">➔ ${leg.originName}</span>
+            <span class="leg-time">${leg.depTime}${leg.depPlatform ? ` <span class="leg-platform">[Pl. ${leg.depPlatform}]</span>` : ''}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; ${strikeStyle}">
-            <span style="color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 170px;">➔ ${leg.destName}</span>
-            <span style="font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 11px;">
-              ${leg.arrTime} ${leg.arrPlatform ? `[Pl. ${leg.arrPlatform}]` : ''}
-            </span>
+          <div class="leg-stop-row secondary">
+            <span class="leg-stop-name"">➔ ${leg.destName}</span>
+            <span class="leg-time muted">${leg.arrTime}${leg.arrPlatform ? ` <span class="leg-platform">[Pl. ${leg.arrPlatform}]</span>` : ''}</span>
           </div>
         </div>
       </div>
     `;
   });
-  html += `</div>`; // End of timeline list
-  html += `</div>`; // End of Left Column
+  html += `</div>`; // End legs list
+  html += `</div>`; // End left column
 
   // --- RIGHT COLUMN: Service Frequency & Alternatives ---
-  html += `<div style="flex: 0.9; display: flex; flex-direction: column; gap: 6px; min-width: 0;">`;
-  
+  html += `<div class="details-frequency-col">`;
+
   if (trainStats.frequency) {
     html += `
-      <div style="display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; background: rgba(255,255,255,0.01); border-radius: 6px; border: 1px solid var(--border-glass); height: 100%;">
-        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; border-bottom: 1px dashed var(--border-glass); padding-bottom: 4px; margin-bottom: 4px;">
+      <div class="frequency-panel">
+        <div class="frequency-panel-header">
           <span>⏱ Frequency</span>
-          <span style="color: var(--accent); font-weight: 800;">${trainStats.frequency.label}</span>
+          <span class="frequency-label">${trainStats.frequency.label}</span>
         </div>
     `;
 
     if (trainStats.alternatives && trainStats.alternatives.length > 0) {
       html += `
-        <div style="display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 130px; padding-right: 2px;">
-          <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.02em;">Next Departures:</div>
+        <div class="departures-list">
+          <div class="departures-list-title">Next Departures:</div>
       `;
 
       trainStats.alternatives.forEach(alt => {
-        let occColor = 'var(--success)';
+        let occClass = 'occ-low';
         let occLabel = 'low';
-        if (alt.occupancy === 'medium') {
-          occColor = 'var(--warning)';
-          occLabel = 'med';
-        } else if (alt.occupancy === 'high') {
-          occColor = 'var(--danger)';
-          occLabel = 'packed';
-        }
-        
-        const isAltCancelled = alt.cancelled === true;
-        const strike = isAltCancelled ? 'text-decoration: line-through; opacity: 0.5;' : '';
+        if (alt.occupancy === 'medium') { occClass = 'occ-med'; occLabel = 'med'; }
+        else if (alt.occupancy === 'high') { occClass = 'occ-high'; occLabel = 'packed'; }
 
-        // Generate occupancy advice if alternative is emptier than current
+        const isAltCancelled = alt.cancelled === true;
+        const cancelledClass = isAltCancelled ? ' cancelled' : '';
+
         let adviceHtml = '';
         if (trainStats.occupancy === 'high' && alt.occupancy !== 'high' && !isAltCancelled) {
-          adviceHtml = `<span style="font-size: 8px; font-weight: 800; color: var(--success); text-transform: uppercase; margin-left: auto;" title="Fewer passengers expected">💡 Recommended</span>`;
+          adviceHtml = `<span class="departure-advice">💡 Recommended</span>`;
         }
 
         html += `
-          <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 4px 6px; background: rgba(255,255,255,0.01); border-radius: 4px; ${strike}">
-            <div style="display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1;">
-              <span style="font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary);">${alt.depTime}</span>
-              <span style="color: var(--text-muted); font-size: 9px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">(${alt.lines.join('/')})</span>
+          <div class="departure-row${cancelledClass}">
+            <div class="departure-row-left">
+              <span class="departure-time">${alt.depTime}</span>
+              <span class="departure-lines">(${alt.lines.join('/')})</span>
             </div>
-            ${isAltCancelled ? 
-              `<span style="color: var(--danger); font-size: 9px; font-weight: 800; text-transform: uppercase; margin-left: auto;">Cancelled</span>` :
-              (adviceHtml ? adviceHtml : `<span style="color: ${occColor}; font-size: 9px; font-weight: 700; text-transform: uppercase; margin-left: auto;">${occLabel}</span>`)
+            ${isAltCancelled
+              ? `<span class="departure-cancelled">Cancelled</span>`
+              : (adviceHtml ? adviceHtml : `<span class="departure-occ ${occClass}">${occLabel}</span>`)
             }
           </div>
         `;
@@ -189,18 +185,14 @@ function populateTrainTimeline(result, stationName) {
 
       html += `</div>`;
     } else {
-      html += `
-        <div style="font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 2px;">
-          No alternative departures found.
-        </div>
-      `;
+      html += `<div class="departures-empty">No alternative departures found.</div>`;
     }
 
-    html += `</div>`;
+    html += `</div>`; // End frequency-panel
   }
-  
-  html += `</div>`; // End of Right Column
-  html += `</div>`; // End of Two-Column Layout
+
+  html += `</div>`; // End right column
+  html += `</div>`; // End details-layout
 
   columnEl.innerHTML = html;
 }

@@ -15,6 +15,7 @@ import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFin
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
 import { clearCache, setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
 import { showRouteDetails } from './ui/routeDetailsPanel.js';
+import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRouteDetails as mobileShowDetails, showSettings as mobileShowSettings, startSearchMode, updateSearchProgress } from './ui/mobileSheet.js';
 
 // Default: Alexanderplatz, Berlin
 const DEFAULT_HOME = { lat: 52.5219, lon: 13.4132, name: 'Alexanderplatz, Berlin' };
@@ -39,6 +40,7 @@ async function main() {
     onCalculate: handleCalculate,
     onSetHomeClick: () => setHomePickerMode(true),
     onSoftMatchesToggle: (showSoft) => filterSoftMatches(showSoft),
+    onRequestGps: detectLocation,
   });
 
   // 3. Request geolocation
@@ -52,6 +54,23 @@ async function main() {
     if (calculatedResults.length > 0) {
       exportAllRoutesAsGPX(calculatedResults);
     }
+  });
+
+  // 6. Initialize mobile sheet (no-op on desktop)
+  initMobileSheet({
+    onNewSearch: () => {
+      // Clear existing results and reset UI for a new search
+      clearRoutes();
+      clearSidebar();
+      clearCache();
+      clearTransitQueue();
+      calculatedResults = [];
+      document.body.classList.remove('sidebar-open');
+    },
+    onBack: () => {
+      // Deselect any active route card
+      document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
+    },
   });
 }
 
@@ -153,6 +172,9 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   calculatedResults = [];
   let colorIndex = 0;
 
+  // On mobile: immediately collapse the sheet and show progress pill on the map
+  if (isMobile()) startSearchMode();
+
   // Reset UI
   clearRoutes();
   clearSidebar();
@@ -179,6 +201,7 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
       (done, total, result) => {
         if (!result || !result.isTrainUpdate) {
           controls.updateProgress(done, total);
+          if (isMobile()) updateSearchProgress(done, total);
         }
 
         if (result) {
@@ -226,6 +249,12 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
 
   if (calculatedResults.length > 0) {
     fitToRoutes();
+    // On mobile: transition sheet to route list view
+    if (isMobile()) {
+      mobileShowRouteList(calculatedResults.length);
+    } else {
+      document.body.classList.add('sidebar-open');
+    }
   } else {
     showError(`No routes found within ${tolerance} km of ${distance} km. Try adjusting the distance or tolerance.`);
   }
@@ -233,6 +262,10 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
 
 function handleRouteClick(result) {
   selectRouteById(result.id);
+  if (isMobile()) {
+    const routeName = `${result.lines.map(l => l.id).join(' / ')} · ${result.station.name}`;
+    mobileShowDetails(routeName);
+  }
 }
 
 // --- Error Display ---

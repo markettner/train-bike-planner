@@ -7,6 +7,7 @@
 import { exportRouteAsGPX } from '../algorithm/gpxExport.js';
 import { selectRoute, toggleRouteVisibility } from './mapRenderer.js';
 import { showRouteDetails } from './routeDetailsPanel.js';
+import { isMobile, showRouteDetails as mobileShowDetails } from './mobileSheet.js';
 
 const sidebar = document.getElementById('route-sidebar');
 const routeList = document.getElementById('route-list');
@@ -23,11 +24,13 @@ let visibilityState = {}; // resultId → boolean
 closeBtn?.addEventListener('click', () => {
   sidebar.classList.add('hidden');
   toggleBtn.classList.remove('hidden');
+  document.body.classList.remove('sidebar-open');
 });
 
 toggleBtn?.addEventListener('click', () => {
   sidebar.classList.remove('hidden');
   toggleBtn.classList.add('hidden');
+  document.body.classList.add('sidebar-open');
 });
 
 sortSelect?.addEventListener('change', () => renderList(allResults));
@@ -52,6 +55,7 @@ export function initSidebar(results) {
   sidebar.classList.remove('hidden');
   toggleBtn.classList.add('hidden');
   exportAllBtn.classList.remove('hidden');
+  if (!isMobile()) document.body.classList.add('sidebar-open');
 }
 
 /**
@@ -78,7 +82,7 @@ export function appendResult(result, index) {
   renderList(allResults);
 
   sidebar.classList.remove('hidden');
-  toggleBtn.classList.add('hidden');
+  if (!isMobile()) toggleBtn.classList.add('hidden');
   exportAllBtn?.classList.remove('hidden');
 }
 
@@ -94,6 +98,7 @@ export function clearSidebar() {
   sidebar.classList.add('hidden');
   toggleBtn.classList.add('hidden');
   exportAllBtn?.classList.add('hidden');
+  document.body.classList.remove('sidebar-open');
 }
 
 /**
@@ -216,11 +221,11 @@ function buildCard(result, index) {
   }
 
   card.innerHTML = `
-    <div class="route-card-header" style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-      <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
-        <div class="route-color-dot" style="background:${isLocked ? '#e74c3c' : color};box-shadow:0 0 6px ${isLocked ? '#e74c3c' : color}; margin-top: 0;"></div>
-        <div class="route-line-name" style="color:${isLocked ? '#e74c3c' : color}; margin-bottom: 0; font-weight: 800; font-size: 13px;">${escapeHtml(lineIds)}</div>
-        <div class="route-station-name" style="font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-left: 2px;">${escapeHtml(result.station.name)}</div>
+    <div class="route-card-header">
+      <div class="route-card-info-row">
+        <div class="route-color-dot" style="background:${isLocked ? '#e74c3c' : color};box-shadow:0 0 6px ${isLocked ? '#e74c3c' : color};"></div>
+        <div class="route-line-name" style="color:${isLocked ? '#e74c3c' : color};">${escapeHtml(lineIds)}</div>
+        <div class="route-station-name">${escapeHtml(result.station.name)}</div>
       </div>
       <div class="route-card-actions">
         <button class="route-visibility-btn" title="${isVisible ? 'Hide route' : 'Show route'}" data-id="${result.id}">
@@ -231,19 +236,14 @@ function buildCard(result, index) {
         </button>
       </div>
     </div>
-    <div class="route-summary-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
-      <!-- Train Info -->
-      <div class="train-summary" style="display: flex; align-items: center; gap: 4px; color: var(--text-primary); font-weight: 600; flex-wrap: wrap;">
+    <div class="route-summary-row">
+      <div class="train-summary">
         <span>🚆</span>
         ${trainInfoHtml}
       </div>
-      
-      <!-- Divider -->
-      <div class="card-metric-divider" style="width: 1px; height: 12px; background: var(--border-glass); margin: 0 8px;"></div>
-      
-      <!-- Bike Info -->
-      <div class="bike-summary" style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary); flex: 1; justify-content: flex-end;">
-        <span>🚲 <strong style="color: var(--text-primary);">${result.bikeDistanceKm} km</strong></span>
+      <div class="card-metric-divider"></div>
+      <div class="bike-summary">
+        <span>🚲 <strong class="bike-distance">${result.bikeDistanceKm} km</strong></span>
         <span>⏱ <strong>${formatTime(result.estimatedTimeMin)}</strong></span>
       </div>
     </div>
@@ -287,7 +287,15 @@ function selectRouteCard(card, result) {
   card.classList.add('active');
 
   selectRoute(result.id);
-  showRouteDetails(result);
+
+  if (isMobile()) {
+    // On mobile: sheet handles details display
+    const routeName = `${result.lines.map(l => l.id).join(' / ')} · ${result.station.name}`;
+    mobileShowDetails(routeName);
+    showRouteDetails(result); // still populate the panel DOM
+  } else {
+    showRouteDetails(result);
+  }
 }
 
 /**

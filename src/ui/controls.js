@@ -11,6 +11,7 @@ export function initControls(options = {}) {
     onToleranceChange,
     onProfileChange,
     onSetHomeClick,
+    onRequestGps,
   } = options;
 
   // Elements
@@ -108,14 +109,24 @@ export function initControls(options = {}) {
   setLocationBtn?.addEventListener('click', () => {
     locationHint.style.opacity = '1';
     locationHint.style.color = 'var(--accent)';
-    locationHint.textContent = 'Click anywhere on the map to set home…';
+    locationHint.textContent = 'Tap anywhere on the map to set home…';
     onSetHomeClick?.();
 
     // Reset hint after delay
     setTimeout(() => {
       locationHint.style.color = '';
-      locationHint.textContent = 'Click on the map to set a custom starting point';
+      locationHint.textContent = 'Tap the map to set a custom starting point';
     }, 5000);
+  });
+
+  // Tapping the name also triggers the change flow
+  const homeNameEl = document.getElementById('home-location-name');
+  homeNameEl?.addEventListener('click', () => setLocationBtn?.click());
+
+  // GPS button re-requests geolocation
+  const gpsBtn = document.getElementById('set-location-gps-btn');
+  gpsBtn?.addEventListener('click', () => {
+    onRequestGps?.();
   });
 
   // --- Collapse panel ---

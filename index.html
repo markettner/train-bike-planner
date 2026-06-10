@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Train + Bike — Berlin Tour Planner</title>
   <meta name="description" content="Plan combined train and bike tours from Berlin. Find the perfect starting station for your desired cycling distance." />
 
@@ -53,12 +53,15 @@
     <div id="panel-body">
       <!-- Home location -->
       <div class="control-group">
-        <label class="control-label">📍 Starting point</label>
+        <label class="control-label">📍 STARTING POINT</label>
         <div class="location-display">
-          <span id="home-location-name">Detecting location…</span>
-          <button id="set-location-btn" class="small-btn">Change</button>
+          <span id="home-location-name" class="home-location-name" title="Click to change">Detecting location…</span>
+          <button id="set-location-gps-btn" class="small-btn icon-only" title="Use my GPS location" aria-label="Use my GPS location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path><circle cx="12" cy="12" r="8" stroke-dasharray="3 2"></circle></svg>
+          </button>
+          <button id="set-location-btn" class="small-btn" title="Set custom location">Change</button>
         </div>
-        <p class="control-hint" id="location-hint">Click on the map to set a custom starting point</p>
+        <p class="control-hint" id="location-hint">Tap the map to set a custom starting point</p>
       </div>
 
       <div class="divider"></div>
@@ -255,6 +258,108 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
     <span id="sidebar-toggle-count">0</span>
   </button>
+
+  <!-- =====================================================
+       Mobile UI: Bottom Sheet
+       ===================================================== -->
+
+  <!-- Backdrop (dims map when sheet is expanded) -->
+  <div id="mobile-sheet-backdrop" class="mobile-sheet-backdrop"></div>
+
+  <!-- Bottom Sheet -->
+  <div id="mobile-sheet" class="mobile-sheet" role="dialog" aria-label="Route planner">
+
+    <!-- Drag handle + peek label -->
+    <div id="mobile-sheet-handle-area" class="mobile-sheet-handle-area">
+      <div class="mobile-sheet-handle-pill"></div>
+      <div id="mobile-sheet-peek-label" class="mobile-sheet-peek-label">
+        <span id="mobile-peek-text">⚙ Configure route</span>
+      </div>
+    </div>
+
+    <!-- Views container -->
+    <div class="mobile-sheet-views">
+
+      <!-- View 1: Settings -->
+      <div id="mobile-settings-view" class="mobile-sheet-view active">
+        <div class="mobile-sheet-scroll">
+          <!-- control-panel is moved here by mobileSheet.js on init -->
+        </div>
+      </div>
+
+      <!-- View 2: Route List -->
+      <div id="mobile-routes-view" class="mobile-sheet-view">
+        <!-- New Search pill -->
+        <button id="mobile-new-search-btn" class="mobile-new-search-btn">
+          ⚙ New Search
+        </button>
+        <div class="mobile-sheet-scroll">
+          <!-- route-sidebar is moved here by mobileSheet.js -->
+        </div>
+      </div>
+
+      <!-- View 3: Route Details -->
+      <div id="mobile-details-view" class="mobile-sheet-view">
+        <div class="mobile-sheet-nav">
+          <button id="mobile-back-btn" class="mobile-back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Routes
+          </button>
+          <span id="mobile-details-title" class="mobile-sheet-nav-title"></span>
+        </div>
+        <div class="mobile-sheet-scroll">
+          <!-- route-details-panel is moved here by mobileSheet.js -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =====================================================
+       Mobile UI: Help button + modal
+       ===================================================== -->
+  <button id="mobile-help-btn" class="mobile-help-btn" aria-label="Help">
+    ❓ Help
+  </button>
+
+  <div id="mobile-help-modal" class="mobile-help-modal" role="dialog" aria-label="Help" aria-modal="true">
+    <div class="mobile-help-modal-header">
+      <span class="mobile-help-modal-title">🚆🚲 How to use Train + Bike</span>
+      <button id="mobile-help-close-btn" class="mobile-help-close-btn" aria-label="Close help">✕</button>
+    </div>
+    <div class="mobile-help-modal-body">
+      <div class="help-grid-single">
+        <div class="help-section">
+          <p>Instead of having to cycle loops every time, Train + Bike helps you find cycle routes that start at a train station outside the city and then cycle back home. You define your target cycling distance and the route profile, and the app finds train connections to take you to the perfect starting point.</p>
+        </div>
+        <div class="help-section">
+          <h3>Route Settings</h3>
+          <ul>
+            <li><strong>Distance &amp; Tolerance:</strong> Set your preferred bike ride distance and tolerance. The app matches stations whose cycle route back home sits within this range.</li>
+            <li><strong>Bike Profiles:</strong> Select Trekking, Road bike, or Gravel bike to use customized routing preferences and travel time estimates.</li>
+            <li><strong>Additional Routes:</strong> Toggle to see routes slightly outside your search settings.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>Route List</h3>
+          <ul>
+            <li><strong>Merged Lines:</strong> Multiple train lines serving the same station are combined on a single card.</li>
+            <li><strong>Travel Time &amp; Frequency:</strong> Shows transit duration and how frequently trains run.</li>
+            <li><strong>Utilization Badges:</strong> Displays live passenger occupancy expectations.</li>
+            <li><strong>Locked Routes:</strong> Fallbacks requiring a bus transfer are marked with hazard stripes.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>Details &amp; GPX Export</h3>
+          <ul>
+            <li><strong>Connection Timelines:</strong> Tap any card to see transfer steps, platforms, and live disruption guidance.</li>
+            <li><strong>Alternative Departures:</strong> Lists upcoming departures and highlights emptier connections.</li>
+            <li><strong>GPX Export:</strong> Save a cycle route using the download icon on a card.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="/src/app.js"></script>
 </body>
