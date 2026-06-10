@@ -2259,7 +2259,7 @@ body.sidebar-open #route-details-panel {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border-radius: 0 !important;
-    padding: 0;
+    padding: 0 16px 24px;
     animation: none !important;
   }
 
