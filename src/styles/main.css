@@ -1792,7 +1792,7 @@ input[type="range"]::-moz-range-track {
   background: rgba(255,255,255,0.01);
   border-radius: 6px;
   border: 1px solid var(--border-glass);
-  height: 100%;
+  height: auto;
 }
 
 .frequency-panel-header {
@@ -2261,6 +2261,35 @@ body.sidebar-open #route-details-panel {
     border-radius: 0 !important;
     padding: 0;
     animation: none !important;
+  }
+
+  /* Details panel: override all fixed heights and flex rows */
+  #route-details-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+  }
+
+  /* The sheet nav already shows the route name — hide the duplicate header */
+  .panel-header-details {
+    display: none;
+  }
+
+  .dashboard-body {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #train-legs-timeline {
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+
+  /* Hide the frequency column if it ends up empty */
+  .details-frequency-col:empty {
+    display: none;
   }
 
   /* Details layout stacks vertically on mobile */
