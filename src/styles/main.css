@@ -1503,4 +1503,27 @@ input[type="range"]::-moz-range-track {
   }
 }
 
+/* --- Live Transit Loading & N/A States --- */
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1.0; }
+}
 
+.train-loading {
+  font-size: 11px;
+  color: var(--text-muted);
+  animation: loadingPulse 1.5s infinite ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  font-weight: normal;
+}
+
+.occupancy-badge.badge-na {
+  background: rgba(139, 146, 168, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(139, 146, 168, 0.15);
+}
+
+.train-loading-spinner-container {
+  animation: loadingPulse 1.5s infinite ease-in-out;
+}

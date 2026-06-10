@@ -126,11 +126,28 @@ export async function findRoutesForAllLines(
         if (onProgress) {
           onProgress(i + 1, total, { ...existing, isMergeUpdate: true, newLine: result.lines[0] });
         }
+        
+        // Queue transit info fetching in the background
+        if (transitConfig && transitConfig.homeVbbId) {
+          const alreadyEnqueued = transitQueue.some(item => item.result.id === existing.id);
+          if (!alreadyEnqueued && existing.trainStatsStatus === 'loading') {
+            transitQueue.push({ result: existing, transitConfig, done: i + 1, total, onProgress });
+          }
+        }
       } else {
         results.push(result);
         if (onProgress) {
           onProgress(i + 1, total, result);
         }
+        
+        // Queue transit info fetching in the background
+        if (transitConfig && transitConfig.homeVbbId) {
+          transitQueue.push({ result, transitConfig, done: i + 1, total, onProgress });
+        }
+      }
+      
+      if (transitConfig && transitConfig.homeVbbId) {
+        processTransitQueue();
       }
     } else {
       if (onProgress) {
@@ -255,20 +272,7 @@ async function findRouteForStationList(line, stations, homeCoords, targetKm, tol
   const elevation = extractElevation(bestResult.geojson);
   const timeMin = extractTime(bestResult.geojson);
 
-  // Get train connection details from VBB API
-  let trainStats = null;
-  if (transitConfig && transitConfig.homeVbbId) {
-    const stationVbbId = await getStationVbbId(bestResult.station);
-    if (stationVbbId) {
-      trainStats = await calculateTrainRoute(
-        transitConfig.homeVbbId,
-        stationVbbId,
-        transitConfig.date,
-        transitConfig.time,
-        transitConfig.timeType
-      );
-    }
-  }
+  const trainStatsStatus = (transitConfig && transitConfig.homeVbbId) ? 'loading' : 'failed';
 
   // Generate a unique ID for the result (e.g. line-station)
   const id = `${line.id}-${bestResult.station.id}`;
@@ -290,7 +294,8 @@ async function findRouteForStationList(line, stations, homeCoords, targetKm, tol
     elevationProfile: elevation?.profile ?? [],
     estimatedTimeMin: timeMin ?? Math.round(bestResult.actualKm / 20 * 60),
     isSoftMatch,
-    trainStats
+    trainStatsStatus,
+    trainStats: null
   };
 }
 
@@ -334,4 +339,56 @@ function toRad(deg) {
 function estimateFallbackTime(km) {
   // Rough estimate: 20 km/h average cycling speed
   return Math.round(km / 20 * 60);
+}
+
+// --- Asynchronous Transit Queue Processing ---
+
+const transitQueue = [];
+let isProcessingQueue = false;
+
+export function clearTransitQueue() {
+  transitQueue.length = 0;
+  isProcessingQueue = false;
+}
+
+async function processTransitQueue() {
+  if (isProcessingQueue || transitQueue.length === 0) return;
+  isProcessingQueue = true;
+
+  while (transitQueue.length > 0) {
+    const { result, transitConfig, done, total, onProgress } = transitQueue.shift();
+
+    try {
+      const stationVbbId = await getStationVbbId(result.station);
+      if (stationVbbId) {
+        const trainStats = await calculateTrainRoute(
+          transitConfig.homeVbbId,
+          stationVbbId,
+          transitConfig.date,
+          transitConfig.time,
+          transitConfig.timeType
+        );
+        if (trainStats) {
+          result.trainStats = trainStats;
+          result.trainStatsStatus = 'success';
+        } else {
+          result.trainStatsStatus = 'failed';
+        }
+      } else {
+        result.trainStatsStatus = 'failed';
+      }
+    } catch (err) {
+      console.warn(`Background transit route query failed for ${result.station.name}:`, err.message);
+      result.trainStatsStatus = 'failed';
+    }
+
+    if (onProgress) {
+      onProgress(done, total, { ...result, isTrainUpdate: true });
+    }
+
+    // Rate limiting: wait 800ms between live transit requests to avoid rate limits
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+
+  isProcessingQueue = false;
 }

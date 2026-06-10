@@ -78,6 +78,7 @@ export function initMap(options = {}) {
     },
     onAdd: function(map) {
       const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-train-toggle');
+      L.DomEvent.disableClickPropagation(container);
       const button = L.DomUtil.create('a', 'leaflet-control-train-toggle-btn', container);
       button.href = '#';
       button.title = 'Toggle Train Lines';

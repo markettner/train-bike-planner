@@ -6,6 +6,15 @@ on:
       - main
       - master
 
+  # Re-deploy automatically when the data-update workflow pushes new data files
+  workflow_run:
+    workflows: ["Update Station Data"]
+    types:
+      - completed
+
+  # Allow manual re-deploy from the Actions tab
+  workflow_dispatch:
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 

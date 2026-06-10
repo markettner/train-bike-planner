@@ -23,7 +23,7 @@ export function showRouteDetails(result) {
   }
 
   // Populate VBB train details timeline
-  populateTrainTimeline(result.trainStats, result.station.name);
+  populateTrainTimeline(result, result.station.name);
 
   // Show panel
   panel?.classList.remove('hidden');
@@ -36,14 +36,27 @@ export function hide() {
   panel?.classList.add('hidden');
 }
 
-function populateTrainTimeline(trainStats, stationName) {
+function populateTrainTimeline(result, stationName) {
   const columnEl = document.getElementById('train-details-column');
   if (!columnEl) return;
 
-  if (!trainStats || !trainStats.legs || trainStats.legs.length === 0) {
+  const trainStats = result?.trainStats;
+  const status = result?.trainStatsStatus || (result?.trainStats ? 'success' : 'failed');
+
+  if (status === 'loading') {
+    columnEl.innerHTML = `
+      <div class="train-loading-spinner-container" style="color: var(--text-muted); font-style: italic; padding: 30px 0; font-size: 12px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div class="btn-spinner" style="width: 20px; height: 20px; border-width: 2px; border-color: rgba(77, 159, 255, 0.2); border-top-color: var(--accent);"></div>
+        <span>Fetching live train connection details…</span>
+      </div>
+    `;
+    return;
+  }
+
+  if (status === 'failed' || !trainStats || !trainStats.legs || trainStats.legs.length === 0) {
     columnEl.innerHTML = `
       <div style="color: var(--text-muted); font-style: italic; padding: 20px 0; font-size: 12px; text-align: center;">
-        No train connections found for this time.
+        ${status === 'failed' ? '⚠️ Live train connection details unavailable (APIs offline)' : 'No train connections found for this time.'}
       </div>
     `;
     return;

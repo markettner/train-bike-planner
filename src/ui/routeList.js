@@ -199,6 +199,22 @@ function buildCard(result, index) {
 
   const lineIds = result.lines.map(l => l.id).join(' / ');
 
+  const status = result.trainStatsStatus || (result.trainStats ? 'success' : 'failed');
+  let trainInfoHtml = '';
+
+  if (status === 'loading') {
+    trainInfoHtml = `<span class="train-loading">fetching...</span>`;
+  } else if (status === 'failed' || !result.trainStats || result.trainStats.durationMin == null) {
+    trainInfoHtml = `<span class="occupancy-badge badge-na" title="Transit connection data is unavailable (API offline)">N/A</span>`;
+  } else {
+    trainInfoHtml = `
+      <span>${result.trainStats.durationMin}m</span>
+      ${hasCancellation ? `<span class="occupancy-badge badge-high" style="font-size: 9px; padding: 1px 4px;">❌ Cancelled</span>` : ''}
+      ${getOccupancyBadge(result.trainStats.occupancy)}
+      ${getFrequencyBadge(result.trainStats.frequency)}
+    `;
+  }
+
   card.innerHTML = `
     <div class="route-card-header" style="margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
@@ -219,10 +235,7 @@ function buildCard(result, index) {
       <!-- Train Info -->
       <div class="train-summary" style="display: flex; align-items: center; gap: 4px; color: var(--text-primary); font-weight: 600; flex-wrap: wrap;">
         <span>🚆</span>
-        <span>${result.trainStats && result.trainStats.durationMin != null ? `${result.trainStats.durationMin}m` : '--'}</span>
-        ${hasCancellation ? `<span class="occupancy-badge badge-high" style="font-size: 9px; padding: 1px 4px;">❌ Cancelled</span>` : ''}
-        ${getOccupancyBadge(result.trainStats?.occupancy)}
-        ${getFrequencyBadge(result.trainStats?.frequency)}
+        ${trainInfoHtml}
       </div>
       
       <!-- Divider -->

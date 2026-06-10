@@ -179,6 +179,37 @@ let homeVbbId = null;
 let homeVbbCoords = null;
 
 /**
+ * Helper to fetch from VBB API with automatic Deutsche Bahn (DB) API fallback.
+ */
+async function fetchFromTransitAPI(endpointPath, options = {}) {
+  const vbbUrl = `https://v6.vbb.transport.rest${endpointPath}`;
+  const dbUrl = `https://v6.db.transport.rest${endpointPath}`;
+
+  try {
+    // Try VBB first
+    const res = await fetch(vbbUrl, options);
+    if (res.ok) {
+      return await res.json();
+    }
+    console.warn(`VBB API returned status ${res.status} for ${endpointPath}. Trying DB API fallback...`);
+  } catch (err) {
+    console.warn(`VBB API request failed for ${endpointPath} (${err.message}). Trying DB API fallback...`);
+  }
+
+  // Fallback to DB API
+  try {
+    const res = await fetch(dbUrl, options);
+    if (!res.ok) {
+      throw new Error(`DB API returned status ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error(`Both VBB and DB API requests failed for ${endpointPath}:`, err.message);
+    throw err;
+  }
+}
+
+/**
  * Load pre-computed VBB station mappings.
  */
 export function setStationMappings(mappings) {
@@ -196,16 +227,14 @@ export async function getStationVbbId(station) {
   if (!station) return null;
   // Fallback: resolve live
   try {
-    const url = `https://v6.vbb.transport.rest/locations/nearby?latitude=${station.lat}&longitude=${station.lon}&results=1`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await fetchFromTransitAPI(`/locations/nearby?latitude=${station.lat}&longitude=${station.lon}&results=1`);
     if (data && data[0] && data[0].id) {
       const vbbId = data[0].id;
       stationMappings[station.id] = vbbId; // cache in memory
       return vbbId;
     }
   } catch (err) {
-    console.warn(`Failed to resolve station VBB ID live for ${station.name}:`, err.message);
+    console.warn(`Failed to resolve station VBB/DB ID live for ${station.name}:`, err.message);
   }
   return null;
 }
@@ -218,16 +247,14 @@ export async function getHomeVbbId(coords) {
     return homeVbbId;
   }
   try {
-    const url = `https://v6.vbb.transport.rest/locations/nearby?latitude=${coords.lat}&longitude=${coords.lon}&results=1`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await fetchFromTransitAPI(`/locations/nearby?latitude=${coords.lat}&longitude=${coords.lon}&results=1`);
     if (data && data[0] && data[0].id) {
       homeVbbId = data[0].id;
       homeVbbCoords = { lat: coords.lat, lon: coords.lon };
       return homeVbbId;
     }
   } catch (err) {
-    console.error('Failed to resolve Home VBB ID:', err);
+    console.error('Failed to resolve Home VBB/DB ID:', err);
   }
   return null;
 }
@@ -293,9 +320,9 @@ export async function calculateTrainRoute(fromStopId, toStopId, date, time, time
  */
 async function fetchConnection(fromStopId, toStopId, date, time, timeType, excludeBuses) {
   try {
-    let url = `https://v6.vbb.transport.rest/journeys?from=${fromStopId}&to=${toStopId}&results=8`;
+    let path = `/journeys?from=${fromStopId}&to=${toStopId}&results=8`;
     if (excludeBuses) {
-      url += '&bus=false';
+      path += '&bus=false';
     }
     
     // Add date/time parameters if provided
@@ -308,14 +335,12 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
       const hours = pad(Math.floor(offsetMin / 60));
       const mins = pad(offsetMin % 60);
       const dt = `${date}T${time}:00${sign}${hours}:${mins}`;
-      url += `&${timeType}=${encodeURIComponent(dt)}`;
+      path += `&${timeType}=${encodeURIComponent(dt)}`;
     }
     
-    const res = await fetch(url, {
+    const data = await fetchFromTransitAPI(path, {
       headers: { 'Accept-Language': 'en' }
     });
-    if (!res.ok) return null;
-    const data = await res.json();
     
     if (data && data.journeys && data.journeys.length > 0) {
       const processedJourneys = data.journeys.map(journey => {

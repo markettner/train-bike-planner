@@ -11,9 +11,10 @@ import { initMap, setHomeMarker, setDistanceCircle, drawTrainLines,
          getRouteColor, updateBikeRoutePopup } from './ui/mapRenderer.js';
 import { initControls } from './ui/controls.js';
 import { initSidebar, appendResult, clearSidebar, finalizeSidebar, selectRouteById, filterSoftMatches } from './ui/routeList.js';
-import { findRoutesForAllLines } from './algorithm/stationFinder.js';
+import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFinder.js';
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
 import { clearCache, setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
+import { showRouteDetails } from './ui/routeDetailsPanel.js';
 
 // Default: Alexanderplatz, Berlin
 const DEFAULT_HOME = { lat: 52.5219, lon: 13.4132, name: 'Alexanderplatz, Berlin' };
@@ -81,12 +82,19 @@ function detectLocation() {
 
 async function reverseGeocode(coords) {
   try {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lon}&format=json&zoom=14`;
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lon}&format=json&zoom=18`;
     const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     const data = await res.json();
-    // Build a short friendly name
+    
     const addr = data.address;
-    const parts = [addr?.road, addr?.suburb || addr?.neighbourhood, addr?.city || addr?.town].filter(Boolean);
+    if (!addr) return 'Your Location';
+
+    // Build a structured address
+    const street = addr.road ? (addr.road + (addr.house_number ? ' ' + addr.house_number : '')) : '';
+    const localArea = addr.suburb || addr.neighbourhood || addr.quarter || addr.village || addr.hamlet;
+    const city = addr.city || addr.town || addr.municipality;
+
+    const parts = [street, localArea, city].filter(Boolean);
     return parts.slice(0, 2).join(', ') || data.display_name?.split(',')[0] || 'Your Location';
   } catch {
     return 'Your Location';
@@ -149,6 +157,7 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   clearRoutes();
   clearSidebar();
   clearCache();
+  clearTransitQueue();
 
   // Show the distance circle
   setDistanceCircle(homeCoords, distance / 1.3); // rough crow-flies radius
@@ -168,15 +177,26 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
       profile,
       transitConfig,
       (done, total, result) => {
-        controls.updateProgress(done, total);
+        if (!result || !result.isTrainUpdate) {
+          controls.updateProgress(done, total);
+        }
 
         if (result) {
-          if (result.isMergeUpdate) {
+          if (result.isMergeUpdate || result.isTrainUpdate) {
             updateBikeRoutePopup(result);
             appendResult(result, colorIndex - 1);
             const foundIdx = calculatedResults.findIndex(r => r.id === result.id);
             if (foundIdx !== -1) {
               calculatedResults[foundIdx] = result;
+            }
+            
+            // If this updated route's details are currently visible in details panel, refresh it
+            const detailsPanel = document.getElementById('route-details-panel');
+            if (detailsPanel && !detailsPanel.classList.contains('hidden')) {
+              const activeCard = document.querySelector('.route-card.active');
+              if (activeCard && activeCard.dataset.routeId === result.id) {
+                showRouteDetails(result);
+              }
             }
           } else {
             // Assign color
