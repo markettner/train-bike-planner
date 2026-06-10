@@ -162,7 +162,7 @@ export function showRouteDetails(routeName) {
   if (!isMobile() || !isInitialized) return;
   if (detailsTitle) detailsTitle.textContent = routeName || '';
   showView('details');
-  snapTo(HALF_HEIGHT);
+  snapTo(EXPAND_HEIGHT);
 }
 
 /** Collapse to peek */

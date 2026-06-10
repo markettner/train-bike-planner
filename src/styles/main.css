@@ -2283,6 +2283,11 @@ body.sidebar-open #route-details-panel {
     gap: 0;
   }
 
+  #train-details-column {
+    width: 100%;
+    flex: none;
+  }
+
   /* Timeline: no scroll cap, no right padding needed */
   #train-legs-timeline {
     max-height: none;
