@@ -1747,11 +1747,14 @@ input[type="range"]::-moz-range-track {
   gap: 2px;
   font-size: 11px;
   margin-top: 2px;
+  width: 100%;
 }
 
 .leg-stop-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .leg-stop-row.secondary .leg-stop-name {
@@ -1764,7 +1767,9 @@ input[type="range"]::-moz-range-track {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  max-width: 170px;
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
 }
 
 .leg-time {
@@ -2371,10 +2376,7 @@ body.sidebar-open #route-details-panel {
   }
 
   .leg-stop-name {
-    max-width: none;   /* was 170px — hardcoded for desktop */
     font-size: 13px;
-    flex: 1;
-    min-width: 0;
   }
 
   .leg-time {

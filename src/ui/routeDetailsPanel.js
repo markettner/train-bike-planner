@@ -42,6 +42,9 @@ export function showRouteDetails(result) {
   }
 }
 
+// Expose for automated testing/debugging
+window.__showRouteDetails = showRouteDetails;
+
 /**
  * Hide the route details panel.
  */
@@ -127,7 +130,7 @@ export function populateTrainTimeline(result, stationName, containerEl) {
             <span class="leg-time">${leg.depTime}${leg.depPlatform ? ` <span class="leg-platform">[Pl. ${leg.depPlatform}]</span>` : ''}</span>
           </div>
           <div class="leg-stop-row secondary">
-            <span class="leg-stop-name"">➔ ${leg.destName}</span>
+            <span class="leg-stop-name">➔ ${leg.destName}</span>
             <span class="leg-time muted">${leg.arrTime}${leg.arrPlatform ? ` <span class="leg-platform">[Pl. ${leg.arrPlatform}]</span>` : ''}</span>
           </div>
         </div>

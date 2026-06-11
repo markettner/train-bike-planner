@@ -120,6 +120,14 @@ export function initMobileSheet({ onNewSearch: _onNewSearch, onBack: _onBack } =
 
   isInitialized = true;
 
+  window.__mobileSheet = {
+    expand,
+    collapse,
+    showSettings,
+    showRouteList,
+    showRouteDetails,
+  };
+
   // Trigger Leaflet to recalculate map size after DOM reorganisation
   // (fixes blank map on first load — the panel move can confuse the layout engine)
   requestAnimationFrame(() => {
