@@ -2292,11 +2292,14 @@ body.sidebar-open #route-details-panel {
   .dashboard-body {
     flex-direction: column;
     gap: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   #train-details-column {
     width: 100%;
     flex: none;
+    box-sizing: border-box;
   }
 
   /* Timeline: no scroll cap, no right padding needed */
@@ -2304,12 +2307,16 @@ body.sidebar-open #route-details-panel {
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* Stack the two layout columns vertically, full width */
   .details-layout {
     flex-direction: column;
     gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .details-timeline-col,
@@ -2317,6 +2324,7 @@ body.sidebar-open #route-details-panel {
     flex: none;
     width: 100%;
     min-width: 0;
+    box-sizing: border-box;
   }
 
   /* Hide empty frequency column */
@@ -2330,6 +2338,8 @@ body.sidebar-open #route-details-panel {
     overflow-y: visible;
     padding-right: 0;
     gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* Summary row: keep on one line */
@@ -2348,6 +2358,8 @@ body.sidebar-open #route-details-panel {
   .timeline-leg {
     padding: 10px 12px;
     gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .leg-header {

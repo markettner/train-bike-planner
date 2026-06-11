@@ -313,14 +313,26 @@ function initDrag() {
   let lastVelocity = 0;
   let lastTimestamp = 0;
 
-  handleArea.addEventListener('touchstart', onTouchStart, { passive: true });
-  sheet.addEventListener('touchstart', onTouchStartSheet, { passive: true });
+  // Track click/tap detection
+  let startX = 0;
+  let startTime = 0;
 
-  function onTouchStart(e) {
-    beginDrag(e.touches[0].clientY);
+  handleArea.addEventListener('pointerdown', onPointerDown);
+  sheet.addEventListener('pointerdown', onPointerDownSheet);
+
+  function onPointerDown(e) {
+    // Only drag on left click or touch/pen
+    if (e.button !== 0) return;
+    startX = e.clientX;
+    startTime = Date.now();
+    beginDrag(e.clientY);
+    try {
+      handleArea.setPointerCapture(e.pointerId);
+    } catch (err) {}
   }
 
-  function onTouchStartSheet(e) {
+  function onPointerDownSheet(e) {
+    if (e.button !== 0) return;
     // Only drag from the handle area or when at peek/half height
     const target = e.target;
     if (!handleArea.contains(target) && currentSnapFrac !== null && currentSnapFrac >= HALF_HEIGHT) {
@@ -328,7 +340,12 @@ function initDrag() {
       return;
     }
     if (!handleArea.contains(target) && currentSnapFrac === null) {
-      beginDrag(e.touches[0].clientY);
+      startX = e.clientX;
+      startTime = Date.now();
+      beginDrag(e.clientY);
+      try {
+        sheet.setPointerCapture(e.pointerId);
+      } catch (err) {}
     }
   }
 
@@ -340,12 +357,14 @@ function initDrag() {
     lastVelocity = 0;
     startTranslateY = getCurrentTranslateY();
     sheet.classList.add('no-transition');
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none';
   }
 
-  document.addEventListener('touchmove', (e) => {
+  document.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
 
-    const clientY = e.touches[0].clientY;
+    const clientY = e.clientY;
     const now = Date.now();
     const dt = now - lastTimestamp;
     if (dt > 0) {
@@ -365,14 +384,35 @@ function initDrag() {
     backdrop.style.background = `rgba(0,0,0,${0.3 * progress})`;
     backdrop.classList.toggle('visible', progress > 0);
     backdrop.style.pointerEvents = progress > 0 ? 'auto' : 'none';
-  }, { passive: true });
+  });
 
-  document.addEventListener('touchend', () => {
+  const onPointerUp = (e) => {
     if (!isDragging) return;
     isDragging = false;
     sheet.classList.remove('no-transition');
     backdrop.style.background = '';
     backdrop.style.pointerEvents = '';
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
+
+    try {
+      if (handleArea.hasPointerCapture(e.pointerId)) handleArea.releasePointerCapture(e.pointerId);
+      if (sheet.hasPointerCapture(e.pointerId)) sheet.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+
+    // Check if it was a quick click/tap (small movement and time)
+    const elapsed = Date.now() - startTime;
+    const dist = Math.sqrt(Math.pow(e.clientX - startX, 2) + Math.pow(e.clientY - startY, 2));
+    if (elapsed < 300 && dist < 6) {
+      // Toggle the sheet
+      if (currentSnapFrac === null) {
+        if (currentView === 'details') snapTo(EXPAND_HEIGHT);
+        else snapTo(HALF_HEIGHT);
+      } else {
+        snapTo(null);
+      }
+      return;
+    }
 
     const currentY = getCurrentTranslateY();
     const dvh = window.innerHeight;
@@ -381,7 +421,6 @@ function initDrag() {
     const expandY = dvh - Math.round(dvh * EXPAND_HEIGHT);
 
     // Use velocity to decide snap direction
-    // Positive velocity = flicking down (collapse), negative = flicking up (expand)
     const VELOCITY_THRESHOLD = 0.3; // px/ms
 
     if (lastVelocity > VELOCITY_THRESHOLD) {
@@ -408,7 +447,10 @@ function initDrag() {
       else if (min === toHalf) snapTo(HALF_HEIGHT);
       else                  snapTo(EXPAND_HEIGHT);
     }
-  });
+  };
+
+  document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerUp);
 }
 
 // ---------------------------------------------------------------------------
