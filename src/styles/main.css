@@ -1751,10 +1751,11 @@ input[type="range"]::-moz-range-track {
 }
 
 .leg-stop-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   width: 100%;
+  gap: 8px;
 }
 
 .leg-stop-row.secondary .leg-stop-name {
@@ -1767,9 +1768,7 @@ input[type="range"]::-moz-range-track {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  flex: 1;
   min-width: 0;
-  margin-right: 8px;
 }
 
 .leg-time {
@@ -2263,6 +2262,7 @@ body.sidebar-open #route-details-panel {
     display: block !important;
     position: static !important;
     width: 100% !important;
+    max-width: none !important;
     transform: none !important;
     background: transparent !important;
     border: none !important;
