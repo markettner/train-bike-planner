@@ -2248,6 +2248,12 @@ body.sidebar-open #route-details-panel {
   }
 
   /* --- Details view --- */
+  /* Details scroll: no horizontal padding — the panel adds its own */
+  #mobile-details-view .mobile-sheet-scroll {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   #mobile-details-view #route-details-panel {
     display: block !important;
     position: static !important;
