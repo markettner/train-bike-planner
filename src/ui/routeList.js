@@ -35,6 +35,11 @@ toggleBtn?.addEventListener('click', () => {
 
 sortSelect?.addEventListener('change', () => renderList(allResults));
 
+const softMatchesToggle = document.getElementById('soft-matches-toggle');
+softMatchesToggle?.addEventListener('change', () => {
+  filterSoftMatches(softMatchesToggle.checked);
+});
+
 /**
  * Initialize the sidebar with a new set of results.
  * Called progressively as routes are calculated.

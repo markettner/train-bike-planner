@@ -88,14 +88,7 @@
         <input type="range" id="tolerance-slider" min="2" max="30" value="5" step="1" />
       </div>
 
-      <!-- Toggle soft matches -->
-      <div class="control-group flex-row">
-        <span class="control-label" style="margin-bottom: 0;">Include additional routes</span>
-        <label class="switch">
-          <input type="checkbox" id="soft-matches-toggle" checked />
-          <span class="slider-toggle"></span>
-        </label>
-      </div>
+
 
       <div class="divider"></div>
 
@@ -232,6 +225,16 @@
         </button>
       </div>
     </div>
+
+    <!-- Sub-header for display filters -->
+    <div class="sidebar-subheader">
+      <span class="control-label" style="margin-bottom: 0; font-size: 12px; font-weight: 500;">Include additional routes</span>
+      <label class="switch">
+        <input type="checkbox" id="soft-matches-toggle" checked />
+        <span class="slider-toggle"></span>
+      </label>
+    </div>
+
     <div id="route-list"></div>
   </div>
 
@@ -289,13 +292,13 @@
 
       <!-- View 2: Route List -->
       <div id="mobile-routes-view" class="mobile-sheet-view">
-        <!-- New Search pill -->
-        <button id="mobile-new-search-btn" class="mobile-new-search-btn">
-          ⚙ New Search
-        </button>
         <div class="mobile-sheet-scroll">
           <!-- route-sidebar is moved here by mobileSheet.js -->
         </div>
+        <!-- New Search pill -->
+        <button id="mobile-new-search-btn" class="mobile-new-search-btn">
+          New Search
+        </button>
       </div>
 
       <!-- View 3: Route Details -->

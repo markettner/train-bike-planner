@@ -25,6 +25,7 @@ let linesData = null;
 let calculatedResults = [];
 let isCalculating = false;
 let controls = null;
+let lastSearchedSettings = null;
 
 // --- Bootstrap ---
 
@@ -42,7 +43,7 @@ async function main() {
       setHomePickerMode(true);
       collapseForLocationPick(); // on mobile: collapse sheet, show tap hint
     },
-    onSoftMatchesToggle: (showSoft) => filterSoftMatches(showSoft),
+    onSettingsChange: checkSettingsStale,
     onRequestGps: detectLocation,
   });
 
@@ -68,6 +69,8 @@ async function main() {
       clearCache();
       clearTransitQueue();
       calculatedResults = [];
+      lastSearchedSettings = null;
+      clearStaleState();
       document.body.classList.remove('sidebar-open');
     },
     onBack: () => {
@@ -127,6 +130,7 @@ function setHome(coords) {
   homeCoords = coords;
   setHomeMarker(coords);
   controls.setHomeName(coords.name || `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`);
+  checkSettingsStale();
 }
 
 async function handleHomeChange(coords) {
@@ -179,6 +183,18 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   isCalculating = true;
   calculatedResults = [];
   let colorIndex = 0;
+
+  lastSearchedSettings = {
+    homeLat: homeCoords.lat,
+    homeLon: homeCoords.lon,
+    distance,
+    tolerance,
+    profile,
+    date,
+    time,
+    timeType
+  };
+  clearStaleState();
 
   // On mobile: immediately collapse the sheet and show progress pill on the map
   if (isMobile()) startSearchMode();
@@ -253,6 +269,7 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
 
   isCalculating = false;
   controls.setCalculating(false);
+  checkSettingsStale();
   finalizeSidebar();
 
   if (calculatedResults.length > 0) {
@@ -314,6 +331,52 @@ window.addEventListener('show-error-toast', (e) => {
     showError(e.detail.message);
   }
 });
+
+function clearStaleState() {
+  const calculateBtn = document.getElementById('calculate-btn');
+  if (calculateBtn) {
+    calculateBtn.classList.remove('stale');
+    const textEl = document.getElementById('calculate-btn-text');
+    if (textEl && !isCalculating) {
+      textEl.textContent = 'Find Routes';
+    }
+  }
+}
+
+function checkSettingsStale() {
+  if (!lastSearchedSettings || calculatedResults.length === 0) {
+    clearStaleState();
+    return;
+  }
+
+  const values = controls.getValues();
+  const isStale = (
+    homeCoords.lat !== lastSearchedSettings.homeLat ||
+    homeCoords.lon !== lastSearchedSettings.homeLon ||
+    values.distance !== lastSearchedSettings.distance ||
+    values.tolerance !== lastSearchedSettings.tolerance ||
+    values.profile !== lastSearchedSettings.profile ||
+    values.date !== lastSearchedSettings.date ||
+    values.time !== lastSearchedSettings.time ||
+    values.timeType !== lastSearchedSettings.timeType
+  );
+
+  const calculateBtn = document.getElementById('calculate-btn');
+  if (calculateBtn) {
+    const textEl = document.getElementById('calculate-btn-text');
+    if (isStale) {
+      calculateBtn.classList.add('stale');
+      if (textEl && !isCalculating) {
+        textEl.textContent = 'Update Routes';
+      }
+    } else {
+      calculateBtn.classList.remove('stale');
+      if (textEl && !isCalculating) {
+        textEl.textContent = 'Find Routes';
+      }
+    }
+  }
+}
 
 // --- Start ---
 main();

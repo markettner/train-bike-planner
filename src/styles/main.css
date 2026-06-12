@@ -2109,7 +2109,7 @@ body.sidebar-open #route-details-panel {
 
   /* Sheet views container */
   .mobile-sheet-views {
-    flex: 1;
+    height: calc(var(--sheet-bottom) - 60px);
     min-height: 0;
     position: relative;
     overflow: hidden;
@@ -2182,32 +2182,38 @@ body.sidebar-open #route-details-panel {
     overscroll-behavior: contain;
   }
 
-  /* --- New Search pill button --- */
+  /* --- New Search button --- */
   .mobile-new-search-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    margin: 0 16px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border-glass);
-    border-radius: 20px;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 20px;
+    margin: 12px 16px 16px;
+    background: linear-gradient(135deg, #4d9fff 0%, #6a4c93 100%);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius-sm);
     font-family: var(--font);
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #fff;
     cursor: pointer;
     transition: var(--transition);
     flex-shrink: 0;
     width: calc(100% - 32px);
-    justify-content: center;
+    min-height: 52px;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 16px rgba(77, 159, 255, 0.25);
   }
 
-  .mobile-new-search-btn:hover,
+  .mobile-new-search-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(77, 159, 255, 0.4);
+  }
+
   .mobile-new-search-btn:active {
-    background: var(--surface-hover);
-    color: var(--text-primary);
-    border-color: rgba(255,255,255,0.2);
+    transform: translateY(0);
   }
 
   /* --- Settings view: control panel inside sheet --- */
@@ -2720,4 +2726,39 @@ body.sidebar-open #route-details-panel {
     }
   }
 
+  /* Mobile override for sidebar subheader padding */
+  #mobile-routes-view .sidebar-subheader {
+    padding: 10px 0;
+  }
+
 } /* end @media (max-width: 768px) */
+
+/* General Styles (Desktop and shared) */
+.sidebar-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-glass);
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+/* Stale state for calculation button */
+.calculate-btn.stale {
+  background: linear-gradient(135deg, #ff9900 0%, #ff5500 100%) !important;
+  box-shadow: 0 4px 16px rgba(255, 85, 0, 0.4);
+  animation: buttonPulse 2s infinite;
+}
+
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 24px rgba(255, 85, 0, 0.6);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(255, 85, 0, 0.3);
+  }
+}

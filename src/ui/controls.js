@@ -12,6 +12,7 @@ export function initControls(options = {}) {
     onProfileChange,
     onSetHomeClick,
     onRequestGps,
+    onSettingsChange,
   } = options;
 
   // Elements
@@ -27,7 +28,6 @@ export function initControls(options = {}) {
   const controlPanel = document.getElementById('control-panel');
   const profileBtns = document.querySelectorAll('.profile-btn');
   const locationHint = document.getElementById('location-hint');
-  const softMatchesToggle = document.getElementById('soft-matches-toggle');
   const journeyDateInput = document.getElementById('journey-date');
   const journeyTimeInput = document.getElementById('journey-time');
 
@@ -48,6 +48,7 @@ export function initControls(options = {}) {
     distanceInput.value = distanceSlider.value;
     updateSliderFill(distanceSlider);
     onDistanceChange?.(Number(distanceSlider.value));
+    onSettingsChange?.();
   });
 
   distanceInput?.addEventListener('input', () => {
@@ -55,12 +56,14 @@ export function initControls(options = {}) {
     distanceSlider.value = v;
     updateSliderFill(distanceSlider);
     onDistanceChange?.(v);
+    onSettingsChange?.();
   });
 
   toleranceSlider?.addEventListener('input', () => {
     toleranceInput.value = toleranceSlider.value;
     updateSliderFill(toleranceSlider);
     onToleranceChange?.(Number(toleranceSlider.value));
+    onSettingsChange?.();
   });
 
   toleranceInput?.addEventListener('input', () => {
@@ -68,6 +71,7 @@ export function initControls(options = {}) {
     toleranceSlider.value = v;
     updateSliderFill(toleranceSlider);
     onToleranceChange?.(v);
+    onSettingsChange?.();
   });
 
   // Initialize slider fills
@@ -83,6 +87,22 @@ export function initControls(options = {}) {
       btn.classList.add('active');
       activeProfile = btn.dataset.profile;
       onProfileChange?.(activeProfile);
+      onSettingsChange?.();
+    });
+  });
+
+  // --- Date, Time, and Time-type selectors ---
+  journeyDateInput?.addEventListener('change', () => {
+    onSettingsChange?.();
+  });
+
+  journeyTimeInput?.addEventListener('change', () => {
+    onSettingsChange?.();
+  });
+
+  document.querySelectorAll('input[name="time-type"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      onSettingsChange?.();
     });
   });
 
@@ -98,11 +118,6 @@ export function initControls(options = {}) {
       time: journeyTimeInput?.value || '',
       timeType: timeTypeEl?.value || 'departure',
     });
-  });
-
-  // --- Soft Matches Toggle ---
-  softMatchesToggle?.addEventListener('change', () => {
-    options.onSoftMatchesToggle?.(softMatchesToggle.checked);
   });
 
   // --- Home location picker ---
