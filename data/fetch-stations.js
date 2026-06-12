@@ -21,6 +21,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import https from 'https';
+import { optimizeGeometry, optimizeStations } from './geometry-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -265,8 +266,8 @@ async function main() {
       type: lineType,
       name: `${ref}: ${displayName}`,
       color,
-      stations,
-      geometry: totalGeometry,
+      stations: optimizeStations(stations),
+      geometry: optimizeGeometry(totalGeometry),
     });
 
     console.log(`  ✓ ${ref} — ${displayName} (${stations.length} unique stations, max ${maxDist.toFixed(0)} km)`);
@@ -278,6 +279,16 @@ async function main() {
     return a.ref.localeCompare(b.ref, undefined, { numeric: true });
   });
 
+  // Safety guard: if Overpass returned implausibly little data (all servers
+  // failed, partial responses, broken OSM relations), fail the run instead of
+  // overwriting lines.json — the daily workflow would otherwise commit and
+  // deploy a gutted rail network.
+  const MIN_EXPECTED_LINES = 20;
+  if (lines.length < MIN_EXPECTED_LINES) {
+    console.error(`❌ Only ${lines.length} lines fetched (expected ≥ ${MIN_EXPECTED_LINES}). Refusing to overwrite lines.json.`);
+    process.exit(1);
+  }
+
   const output = {
     generated: new Date().toISOString(),
     center: ALEX,
@@ -285,7 +296,8 @@ async function main() {
   };
 
   const outPath = path.join(__dirname, 'lines.json');
-  fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
+  // Minified — this file ships to every visitor's browser
+  fs.writeFileSync(outPath, JSON.stringify(output));
   console.log(`\n✅ Wrote ${lines.length} lines to ${outPath}`);
   console.log(`   S-Bahn: ${lines.filter(l => l.type === 's-bahn').length}`);
   console.log(`   Regional: ${lines.filter(l => l.type === 'regional').length}`);

@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import https from 'https';
+import { optimizeGeometry, optimizeStations } from './geometry-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LINES_PATH = path.join(__dirname, 'lines.json');
@@ -119,7 +120,8 @@ async function main() {
       id: ref, ref, type: 'regional',
       name: `${ref}: ${displayName}`,
       color: REGIONAL_LINES[ref],
-      stations, geometry,
+      stations: optimizeStations(stations),
+      geometry: optimizeGeometry(geometry),
     });
     console.log(`  ✓ ${ref} — ${displayName} (${stations.length} stations, max ${maxDist.toFixed(0)} km)`);
   }
@@ -139,7 +141,7 @@ async function main() {
     return a.ref.localeCompare(b.ref, undefined, { numeric: true });
   });
 
-  fs.writeFileSync(LINES_PATH, JSON.stringify({ ...existing, generated: new Date().toISOString(), lines: merged }, null, 2));
+  fs.writeFileSync(LINES_PATH, JSON.stringify({ ...existing, generated: new Date().toISOString(), lines: merged }));
   console.log(`\n✅ Merged ${sbahnLines.length} S-Bahn + ${newLines.length} regional = ${merged.length} total lines`);
   console.log(`   Total stations: ${merged.reduce((n, l) => n + l.stations.length, 0)}`);
 }
