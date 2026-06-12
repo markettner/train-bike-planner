@@ -7,6 +7,8 @@
 import L from 'leaflet';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
+import { escapeHtml, formatTime } from '../utils.js';
+import { isMobile } from './mobileSheet.js';
 
 // Color palette (primary + extended)
 const ROUTE_COLORS = [
@@ -215,7 +217,7 @@ export function addBikeRoute(result, colorIndex) {
   }).addTo(stationLayerGroup);
 
   // Bind permanent tooltip for station name
-  stationMarker.bindTooltip(result.station.name, {
+  stationMarker.bindTooltip(escapeHtml(result.station.name), {
     permanent: true,
     direction: 'top',
     className: 'station-tooltip',
@@ -225,13 +227,13 @@ export function addBikeRoute(result, colorIndex) {
 
   // Popup on station click
   const rebindPopup = () => {
-    const lineIds = result.lines.map(l => l.id).join(' / ');
-    const lineNames = result.lines.map(l => l.name).join(' / ');
+    const lineIds = escapeHtml(result.lines.map(l => l.id).join(' / '));
+    const lineNames = escapeHtml(result.lines.map(l => l.name).join(' / '));
     stationMarker.bindPopup(() => {
       const el = document.createElement('div');
       el.innerHTML = `
         <div class="popup-line" style="color:${color}">${lineIds} — ${lineNames}</div>
-        <div class="popup-station">${result.station.name}</div>
+        <div class="popup-station">${escapeHtml(result.station.name)}</div>
         <div class="popup-stats">
           <span>🚲 ${result.bikeDistanceKm} km bike route</span>
           <span>⏱ ${formatTime(result.estimatedTimeMin)}</span>
@@ -273,9 +275,7 @@ export function addBikeRoute(result, colorIndex) {
   stationMarker.on('mouseover', handleMouseOver);
   stationMarker.on('mouseout', handleMouseOut);
 
-  const resultId = result.station.name;
-  result.id = resultId;
-  routeLayers.set(resultId, { polyline, stationMarker, color, result, rebindPopup });
+  routeLayers.set(result.id, { polyline, stationMarker, color, result, rebindPopup });
 
   return color;
 }
@@ -307,8 +307,7 @@ export function selectRoute(resultId) {
 
     // Fly to bounds with bottom padding for mobile sheet
     const bounds = polyline.getBounds();
-    const isMob = window.matchMedia('(max-width: 768px)').matches;
-    const padding = isMob ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
+    const padding = isMobile() ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
     map.flyToBounds(bounds, { padding, maxZoom: 12, duration: 0.8 });
   }
 }
@@ -358,8 +357,7 @@ export function fitToRoutes() {
   routeLayers.forEach(({ polyline }) => bounds.extend(polyline.getBounds()));
   if (homeMarker) bounds.extend(homeMarker.getLatLng());
   if (bounds.isValid()) {
-    const isMob = window.matchMedia('(max-width: 768px)').matches;
-    const padding = isMob ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
+    const padding = isMobile() ? [40, 40, Math.round(window.innerHeight * 0.5), 40] : [60, 60];
     map.flyToBounds(bounds, { padding, duration: 1.2 });
   }
 }
@@ -381,20 +379,6 @@ function handleMapClick(e) {
   }
 }
 
-/**
- * Get the current map reference.
- */
-export function getMap() {
-  return map;
-}
-
 export function getRouteColor(index) {
   return ROUTE_COLORS[index % ROUTE_COLORS.length];
-}
-
-function formatTime(minutes) {
-  if (!minutes) return '';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }

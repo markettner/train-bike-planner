@@ -10,15 +10,19 @@ import { initMap, setHomeMarker, setDistanceCircle, drawTrainLines,
          addBikeRoute, clearRoutes, fitToRoutes, setHomePickerMode,
          getRouteColor, updateBikeRoutePopup } from './ui/mapRenderer.js';
 import { initControls } from './ui/controls.js';
-import { initSidebar, appendResult, clearSidebar, finalizeSidebar, selectRouteById, filterSoftMatches } from './ui/routeList.js';
+import { appendResult, clearSidebar, finalizeSidebar, selectRouteById,
+         getVisibleResults, getSelectedRouteId, clearSelection } from './ui/routeList.js';
 import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFinder.js';
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
-import { clearCache, setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
+import { setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
 import { showRouteDetails } from './ui/routeDetailsPanel.js';
 import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRouteDetails as mobileShowDetails, showSettings as mobileShowSettings, startSearchMode, updateSearchProgress, collapseForLocationPick } from './ui/mobileSheet.js';
 
 // Default: Alexanderplatz, Berlin
 const DEFAULT_HOME = { lat: 52.5219, lon: 13.4132, name: 'Alexanderplatz, Berlin' };
+
+const SETTINGS_KEY = 'tbp-settings';
+const HOME_KEY = 'tbp-home';
 
 let homeCoords = { ...DEFAULT_HOME };
 let linesData = null;
@@ -43,41 +47,87 @@ async function main() {
       setHomePickerMode(true);
       collapseForLocationPick(); // on mobile: collapse sheet, show tap hint
     },
-    onSettingsChange: checkSettingsStale,
+    onSettingsChange: () => {
+      checkSettingsStale();
+      persistSettings();
+    },
     onRequestGps: detectLocation,
   });
 
-  // 3. Request geolocation
-  detectLocation();
+  // Restore persisted settings (distance, tolerance, profile, timeType)
+  const savedSettings = loadJson(SETTINGS_KEY);
+  if (savedSettings) controls.setValues(savedSettings);
+
+  // 3. Restore the saved home location, or request geolocation
+  const savedHome = loadJson(HOME_KEY);
+  if (savedHome && Number.isFinite(savedHome.lat) && Number.isFinite(savedHome.lon)) {
+    setHome(savedHome);
+  } else {
+    detectLocation();
+  }
 
   // 4. Load train line data and station mappings
   await Promise.all([loadLinesData(), loadStationMappings()]);
 
-  // 5. Export all button
+  // 5. Export all button — exports only the routes currently visible
+  // (soft-match filter and per-route visibility toggles applied)
   document.getElementById('export-all-btn')?.addEventListener('click', () => {
-    if (calculatedResults.length > 0) {
-      exportAllRoutesAsGPX(calculatedResults);
+    const visible = getVisibleResults();
+    if (visible.length > 0) {
+      exportAllRoutesAsGPX(visible);
+    } else {
+      showError('No visible routes to export. Unhide a route or enable additional routes first.');
     }
   });
 
   // 6. Initialize mobile sheet (no-op on desktop)
   initMobileSheet({
     onNewSearch: () => {
-      // Clear existing results and reset UI for a new search
+      // Clear existing results and reset UI for a new search.
+      // (The BRouter response cache is deliberately kept — it is keyed by
+      // coordinates + profile and never goes stale within a session.)
       clearRoutes();
       clearSidebar();
-      clearCache();
       clearTransitQueue();
       calculatedResults = [];
       lastSearchedSettings = null;
       clearStaleState();
       document.body.classList.remove('sidebar-open');
     },
-    onBack: () => {
-      // Deselect any active route card
-      document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
-    },
+    onBack: clearSelection,
   });
+
+  // 7. The mobile/desktop layouts are set up once at load (panels are moved
+  // into the sheet DOM on mobile). If the viewport crosses the boundary —
+  // tablet rotation, window resize — reload to rebuild the correct layout.
+  window.matchMedia('(max-width: 768px)').addEventListener('change', () => {
+    window.location.reload();
+  });
+}
+
+// --- Persistence ---
+
+function loadJson(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage full or unavailable (private mode) — persistence is best-effort
+  }
+}
+
+function persistSettings() {
+  if (!controls) return;
+  const { distance, tolerance, profile, timeType } = controls.getValues();
+  saveJson(SETTINGS_KEY, { distance, tolerance, profile, timeType });
 }
 
 // --- Geolocation ---
@@ -131,6 +181,7 @@ function setHome(coords) {
   setHomeMarker(coords);
   controls.setHomeName(coords.name || `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`);
   checkSettingsStale();
+  saveJson(HOME_KEY, coords);
 }
 
 async function handleHomeChange(coords) {
@@ -199,10 +250,10 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   // On mobile: immediately collapse the sheet and show progress pill on the map
   if (isMobile()) startSearchMode();
 
-  // Reset UI
+  // Reset UI (the BRouter cache survives — repeat searches with tweaked
+  // settings reuse cached routes instead of re-hitting the API)
   clearRoutes();
   clearSidebar();
-  clearCache();
   clearTransitQueue();
 
   // Show the distance circle
@@ -225,25 +276,26 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
       (done, total, result) => {
         if (!result || !result.isTrainUpdate) {
           controls.updateProgress(done, total);
-          if (isMobile()) updateSearchProgress(done, total);
+          if (isMobile()) {
+            const foundLabel = (result && !result.isMergeUpdate)
+              ? `${result.lines[0].id} ${result.station.name}`
+              : null;
+            updateSearchProgress(done, total, foundLabel);
+          }
         }
 
         if (result) {
           if (result.isMergeUpdate || result.isTrainUpdate) {
             updateBikeRoutePopup(result);
-            appendResult(result, colorIndex - 1);
+            appendResult(result);
             const foundIdx = calculatedResults.findIndex(r => r.id === result.id);
             if (foundIdx !== -1) {
               calculatedResults[foundIdx] = result;
             }
-            
-            // If this updated route's details are currently visible in details panel, refresh it
-            const detailsPanel = document.getElementById('route-details-panel');
-            if (detailsPanel && !detailsPanel.classList.contains('hidden')) {
-              const activeCard = document.querySelector('.route-card.active');
-              if (activeCard && activeCard.dataset.routeId === result.id) {
-                showRouteDetails(result);
-              }
+
+            // If this route is currently selected, refresh the open details panel
+            if (getSelectedRouteId() === result.id) {
+              showRouteDetails(result);
             }
           } else {
             // Assign color
@@ -255,7 +307,7 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
             addBikeRoute(result, colorIndex - 1);
 
             // Add to sidebar immediately (progressive)
-            appendResult(result, colorIndex - 1);
+            appendResult(result);
 
             calculatedResults.push(result);
           }
@@ -302,24 +354,7 @@ function showError(message) {
 
   const toast = document.createElement('div');
   toast.id = 'error-toast';
-  toast.style.cssText = `
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 89, 94, 0.95);
-    backdrop-filter: blur(12px);
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 500;
-    z-index: 9999;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    max-width: min(400px, calc(100vw - 40px));
-    text-align: center;
-    animation: fadeIn 0.2s both;
-  `;
+  toast.className = 'error-toast';
   toast.textContent = message;
   document.body.appendChild(toast);
 

@@ -31,17 +31,32 @@ export function initControls(options = {}) {
   const journeyDateInput = document.getElementById('journey-date');
   const journeyTimeInput = document.getElementById('journey-time');
 
-  // Set default date and time if not set
-  if (journeyDateInput && !journeyDateInput.value) {
-    const today = new Date().toISOString().split('T')[0];
-    journeyDateInput.value = today;
-  }
-  if (journeyTimeInput && !journeyTimeInput.value) {
+  // Default date/time to "now". As long as the user hasn't picked their own
+  // values, refresh the defaults whenever the tab regains focus — a tab left
+  // open overnight would otherwise quietly search with yesterday's date.
+  let dateTouched = false;
+  let timeTouched = false;
+
+  function refreshDateTimeDefaults() {
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    journeyTimeInput.value = `${hours}:${minutes}`;
+    if (journeyDateInput && !dateTouched) {
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      journeyDateInput.value = `${y}-${m}-${d}`;
+    }
+    if (journeyTimeInput && !timeTouched) {
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      journeyTimeInput.value = `${hours}:${minutes}`;
+    }
   }
+
+  refreshDateTimeDefaults();
+  window.addEventListener('focus', refreshDateTimeDefaults);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshDateTimeDefaults();
+  });
 
   // --- Sync slider ↔ input ---
   distanceSlider?.addEventListener('input', () => {
@@ -93,10 +108,12 @@ export function initControls(options = {}) {
 
   // --- Date, Time, and Time-type selectors ---
   journeyDateInput?.addEventListener('change', () => {
+    dateTouched = true;
     onSettingsChange?.();
   });
 
   journeyTimeInput?.addEventListener('change', () => {
+    timeTouched = true;
     onSettingsChange?.();
   });
 
@@ -196,6 +213,37 @@ export function initControls(options = {}) {
         time: journeyTimeInput?.value || '',
         timeType: timeTypeEl?.value || 'departure',
       };
+    },
+
+    /**
+     * Restore persisted settings (distance, tolerance, profile, timeType).
+     * Date/time are intentionally not restored — they default to "now".
+     */
+    setValues({ distance, tolerance, profile, timeType } = {}) {
+      if (distance != null && distanceSlider && distanceInput) {
+        const v = clamp(Number(distance), 20, 200);
+        distanceSlider.value = v;
+        distanceInput.value = v;
+        updateSliderFill(distanceSlider);
+      }
+      if (tolerance != null && toleranceSlider && toleranceInput) {
+        const v = clamp(Number(tolerance), 2, 30);
+        toleranceSlider.value = v;
+        toleranceInput.value = v;
+        updateSliderFill(toleranceSlider);
+      }
+      if (profile) {
+        const btn = document.querySelector(`.profile-btn[data-profile="${profile}"]`);
+        if (btn) {
+          profileBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeProfile = profile;
+        }
+      }
+      if (timeType) {
+        const radio = document.querySelector(`input[name="time-type"][value="${timeType}"]`);
+        if (radio) radio.checked = true;
+      }
     },
   };
 }

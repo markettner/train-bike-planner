@@ -20,15 +20,10 @@
   <meta property="twitter:description" content="Instead of having to cycle loops every time, Train + Bike helps you find cycle routes that start at a train station outside the city and then cycle back home. You define your target cycling distance and the route profile, and the app finds train connections to take you to the perfect starting point." />
   <meta property="twitter:image" content="https://kettner.berlin/train-bike-planner/train-bike_1200x630.png" />
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- Google Fonts -->
+  <!-- Google Fonts (Leaflet CSS and main.css are bundled via src/app.js) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-  <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
 
@@ -219,6 +214,8 @@
         <select id="sort-select" class="sort-select">
           <option value="distance">Sort by distance</option>
           <option value="name">Sort by line</option>
+          <option value="traintime">Sort by train time</option>
+          <option value="totaltime">Sort by total time</option>
         </select>
         <button id="sidebar-close-btn" class="icon-btn" title="Close sidebar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

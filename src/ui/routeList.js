@@ -8,6 +8,7 @@ import { exportRouteAsGPX } from '../algorithm/gpxExport.js';
 import { selectRoute, toggleRouteVisibility } from './mapRenderer.js';
 import { showRouteDetails } from './routeDetailsPanel.js';
 import { isMobile, showRouteDetails as mobileShowDetails } from './mobileSheet.js';
+import { escapeHtml, formatTime } from '../utils.js';
 
 const sidebar = document.getElementById('route-sidebar');
 const routeList = document.getElementById('route-list');
@@ -20,6 +21,7 @@ const exportAllBtn = document.getElementById('export-all-btn');
 
 let allResults = [];
 let visibilityState = {}; // resultId → boolean
+let selectedRouteId = null;
 
 closeBtn?.addEventListener('click', () => {
   sidebar.classList.add('hidden');
@@ -41,50 +43,32 @@ softMatchesToggle?.addEventListener('change', () => {
 });
 
 /**
- * Initialize the sidebar with a new set of results.
- * Called progressively as routes are calculated.
+ * Append a single newly-calculated result card, or update an existing card
+ * in place (train-stats / merge updates arrive progressively during search).
  */
-export function initSidebar(results) {
-  allResults = results;
-  results.forEach(r => {
-    if (visibilityState[r.id] === undefined) {
-      visibilityState[r.id] = true;
-    }
-  });
-
-  routeCount.textContent = `${results.length} route${results.length !== 1 ? 's' : ''} found`;
-  toggleCount.textContent = results.length;
-
-  renderList(results);
-
-  sidebar.classList.remove('hidden');
-  toggleBtn.classList.add('hidden');
-  exportAllBtn.classList.remove('hidden');
-  if (!isMobile()) document.body.classList.add('sidebar-open');
-}
-
-/**
- * Append a single newly-calculated result card.
- * Used for progressive rendering during calculation.
- */
-export function appendResult(result, index) {
-  visibilityState[result.id] = true;
-
-  // Add or update in allResults
+export function appendResult(result) {
   const existingIdx = allResults.findIndex(r => r.id === result.id);
   if (existingIdx === -1) {
+    visibilityState[result.id] = true;
     allResults.push(result);
-    
+
     // Hide soft matches from map immediately if toggle is off
     const showSoft = document.getElementById('soft-matches-toggle')?.checked ?? true;
     if (result.isSoftMatch && !showSoft) {
       toggleRouteVisibility(result.id, false);
     }
+    renderList(allResults);
   } else {
     allResults[existingIdx] = result;
+    // Update just this card in place — a full re-render would reset scroll
+    // position and is needless DOM churn for a single-card data update.
+    const oldCard = routeList.querySelector(`[data-route-id="${cssEscape(result.id)}"]`);
+    if (oldCard) {
+      oldCard.replaceWith(buildCard(result));
+    } else {
+      renderList(allResults);
+    }
   }
-
-  renderList(allResults);
 
   sidebar.classList.remove('hidden');
   if (!isMobile()) toggleBtn.classList.add('hidden');
@@ -97,6 +81,7 @@ export function appendResult(result, index) {
 export function clearSidebar() {
   allResults = [];
   visibilityState = {};
+  selectedRouteId = null;
   routeList.innerHTML = '';
   routeCount.textContent = '0 routes found';
   toggleCount.textContent = '0';
@@ -125,10 +110,21 @@ function renderList(results) {
 
   const sorted = sortResults([...filtered], sortSelect?.value || 'distance');
   routeList.innerHTML = '';
-  sorted.forEach((r, i) => routeList.appendChild(buildCard(r, i)));
+  sorted.forEach(r => routeList.appendChild(buildCard(r)));
 
   routeCount.textContent = `${filtered.length} route${filtered.length !== 1 ? 's' : ''} found`;
   toggleCount.textContent = filtered.length;
+}
+
+/**
+ * Results currently visible to the user (soft-match filter + per-route
+ * visibility toggles applied). Used by "Export all routes as GPX".
+ */
+export function getVisibleResults() {
+  const showSoft = document.getElementById('soft-matches-toggle')?.checked ?? true;
+  return allResults.filter(r =>
+    (showSoft || !r.isSoftMatch) && visibilityState[r.id] !== false
+  );
 }
 
 /**
@@ -146,11 +142,18 @@ export function filterSoftMatches(showSoft) {
 }
 
 function sortResults(results, by) {
+  const trainMin = r => r.trainStats?.durationMin ?? Infinity;
   switch (by) {
     case 'distance':
       return results.sort((a, b) => a.bikeDistanceKm - b.bikeDistanceKm);
     case 'name':
       return results.sort((a, b) => a.lines[0].id.localeCompare(b.lines[0].id));
+    case 'traintime':
+      return results.sort((a, b) => trainMin(a) - trainMin(b));
+    case 'totaltime':
+      return results.sort((a, b) =>
+        (trainMin(a) + a.estimatedTimeMin) - (trainMin(b) + b.estimatedTimeMin)
+      );
     default:
       return results;
   }
@@ -191,7 +194,7 @@ function getFrequencyBadge(frequency) {
   return `<span class="occupancy-badge ${className}">⏱ ${shortLabel}</span>`;
 }
 
-function buildCard(result, index) {
+function buildCard(result) {
   const color = result.lines[0].color;
   const isVisible = visibilityState[result.id] !== false;
   const isLocked = result.trainStats?.isLocked === true;
@@ -202,8 +205,14 @@ function buildCard(result, index) {
   if (result.isSoftMatch) cardClasses += ' soft-match';
   if (isLocked) cardClasses += ' locked-route';
   if (hasCancellation) cardClasses += ' cancelled-route';
+  if (result.id === selectedRouteId) cardClasses += ' active';
   card.className = cardClasses;
-  
+
+  // Keyboard accessibility: cards act as buttons
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `${result.lines.map(l => l.id).join(' / ')} ${result.station.name}, ${result.bikeDistanceKm} km bike route`);
+
   card.dataset.routeId = result.id;
   card.style.setProperty('--route-color', isLocked ? '#e74c3c' : color);
 
@@ -254,9 +263,15 @@ function buildCard(result, index) {
     </div>
   `;
 
-  // Card click → select on map + show elevation
+  // Card click → select on map + show details
   card.addEventListener('click', (e) => {
     if (e.target.closest('.route-visibility-btn') || e.target.closest('.route-export-btn')) return;
+    selectRouteCard(card, result);
+  });
+  card.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target !== card) return; // let the inner buttons handle their own keys
+    e.preventDefault();
     selectRouteCard(card, result);
   });
 
@@ -290,6 +305,7 @@ function selectRouteCard(card, result) {
   // Deactivate all cards
   document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
   card.classList.add('active');
+  selectedRouteId = result.id;
 
   selectRoute(result.id);
 
@@ -304,10 +320,25 @@ function selectRouteCard(card, result) {
 }
 
 /**
+ * The id of the currently selected route, or null.
+ */
+export function getSelectedRouteId() {
+  return selectedRouteId;
+}
+
+/**
+ * Deselect the active route card (back navigation, panel close, new search).
+ */
+export function clearSelection() {
+  selectedRouteId = null;
+  document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
+}
+
+/**
  * Programmatically select a route card and trigger its display.
  */
 export function selectRouteById(routeId) {
-  const card = routeList.querySelector(`[data-route-id="${routeId}"]`);
+  const card = routeList.querySelector(`[data-route-id="${cssEscape(routeId)}"]`);
   if (!card) return;
 
   const result = allResults.find(r => r.id === routeId);
@@ -337,13 +368,6 @@ function downloadSvg() {
 
 // --- Helpers ---
 
-function formatTime(minutes) {
-  if (!minutes) return '?';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function escapeHtml(str) {
-  return str?.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') ?? '';
+function cssEscape(value) {
+  return window.CSS?.escape ? CSS.escape(value) : String(value).replace(/["\\]/g, '\\$&');
 }

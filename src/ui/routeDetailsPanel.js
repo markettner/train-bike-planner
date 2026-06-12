@@ -3,17 +3,18 @@
  * Displays train connection details for a selected route.
  */
 
-import { isMobile } from './mobileSheet.js';
-import { showRouteList } from './mobileSheet.js';
+import { isMobile, showRouteList } from './mobileSheet.js';
+import { clearSelection } from './routeList.js';
+import { escapeHtml, formatTime } from '../utils.js';
 
 const panel = document.getElementById('route-details-panel');
 const routeNameEl = document.getElementById('route-details-name');
 const closeBtn = document.getElementById('route-details-close-btn');
 
 closeBtn?.addEventListener('click', () => {
+  clearSelection();
   if (isMobile()) {
     // On mobile: navigate back to the route list
-    document.querySelectorAll('.route-card.active').forEach(c => c.classList.remove('active'));
     showRouteList();
   } else {
     hide();
@@ -85,7 +86,7 @@ export function populateTrainTimeline(result, stationName, containerEl) {
     const isCritical = trainStats.cancellations.isCritical;
     html += `
       <div class="cancellation-alert${isCritical ? ' critical' : ''}">
-        ${trainStats.cancellations.guidance}
+        ${escapeHtml(trainStats.cancellations.guidance)}
       </div>
     `;
   }
@@ -100,9 +101,13 @@ export function populateTrainTimeline(result, stationName, containerEl) {
   const occupancyLabel = trainStats.occupancy === 'high' ? 'Packed Train Warning ⚠️' : `${trainStats.occupancy} occupancy`;
   const occupancyClass = trainStats.occupancy === 'high' ? 'occupancy-high' : (trainStats.occupancy === 'medium' ? 'occupancy-med' : 'occupancy-low');
 
+  const totalMin = (trainStats.durationMin != null && result?.estimatedTimeMin != null)
+    ? trainStats.durationMin + result.estimatedTimeMin
+    : null;
+
   html += `
     <div class="details-summary-header">
-      <span class="details-transfers-label">${trainStats.transfers === 0 ? 'Direct ride' : `${trainStats.transfers} transfer${trainStats.transfers > 1 ? 's' : ''}`}</span>
+      <span class="details-transfers-label">${trainStats.transfers === 0 ? 'Direct ride' : `${trainStats.transfers} transfer${trainStats.transfers > 1 ? 's' : ''}`}${totalMin != null ? ` · Σ ${formatTime(totalMin)} door-to-door` : ''}</span>
       <span class="details-occupancy-label ${occupancyClass}">${occupancyLabel}</span>
     </div>
   `;
@@ -119,19 +124,19 @@ export function populateTrainTimeline(result, stationName, containerEl) {
       <div class="timeline-leg${isCancelled ? ' cancelled' : ''}">
         <div class="leg-header">
           <div class="leg-header-left">
-            <span class="leg-badge" style="background:${badgeBg}; color:${badgeFg};">${leg.lineName}</span>
+            <span class="leg-badge" style="background:${escapeHtml(badgeBg)}; color:${escapeHtml(badgeFg)};">${escapeHtml(leg.lineName)}</span>
             ${isCancelled ? '<span class="leg-cancelled-label">Cancelled ❌</span>' : ''}
           </div>
           <span class="leg-duration">${leg.duration} min</span>
         </div>
         <div class="leg-stops">
           <div class="leg-stop-row">
-            <span class="leg-stop-name">➔ ${leg.originName}</span>
-            <span class="leg-time">${leg.depTime}${leg.depPlatform ? ` <span class="leg-platform">[Pl. ${leg.depPlatform}]</span>` : ''}</span>
+            <span class="leg-stop-name">➔ ${escapeHtml(leg.originName)}</span>
+            <span class="leg-time">${escapeHtml(leg.depTime)}${leg.depPlatform ? ` <span class="leg-platform">[Pl. ${escapeHtml(leg.depPlatform)}]</span>` : ''}</span>
           </div>
           <div class="leg-stop-row secondary">
-            <span class="leg-stop-name">➔ ${leg.destName}</span>
-            <span class="leg-time muted">${leg.arrTime}${leg.arrPlatform ? ` <span class="leg-platform">[Pl. ${leg.arrPlatform}]</span>` : ''}</span>
+            <span class="leg-stop-name">➔ ${escapeHtml(leg.destName)}</span>
+            <span class="leg-time muted">${escapeHtml(leg.arrTime)}${leg.arrPlatform ? ` <span class="leg-platform">[Pl. ${escapeHtml(leg.arrPlatform)}]</span>` : ''}</span>
           </div>
         </div>
       </div>
@@ -174,8 +179,8 @@ export function populateTrainTimeline(result, stationName, containerEl) {
         html += `
           <div class="departure-row${cancelledClass}">
             <div class="departure-row-left">
-              <span class="departure-time">${alt.depTime}</span>
-              <span class="departure-lines">(${alt.lines.join('/')})</span>
+              <span class="departure-time">${escapeHtml(alt.depTime)}</span>
+              <span class="departure-lines">(${escapeHtml(alt.lines.join('/'))})</span>
             </div>
             ${isAltCancelled
               ? `<span class="departure-cancelled">Cancelled</span>`

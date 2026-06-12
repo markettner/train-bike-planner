@@ -14,11 +14,12 @@
 import {
   calculateBikeRoute,
   extractDistance,
-  extractElevation,
+  extractElevationGain,
   extractTime,
   getStationVbbId,
   calculateTrainRoute
 } from './routeService.js';
+import { haversineKm, toRad } from '../utils.js';
 
 // Initial detour factor estimate: bike routes are ~1.3x the crow-flies distance
 const INITIAL_DETOUR_FACTOR = 1.3;
@@ -30,9 +31,12 @@ function getLineBranches(line, homeCoords, minBranchDist = 6) {
   const outboundStations = line.stations.filter(s => haversineKm(homeCoords, s) >= minBranchDist);
   if (outboundStations.length === 0) return [];
 
-  // Calculate bearing for each station (0 to 360 degrees)
+  // Calculate bearing for each station (0 to 360 degrees).
+  // Longitude degrees shrink with latitude, so scale by cos(lat) to keep
+  // bearings geometrically correct at Berlin's latitude.
+  const lonScale = Math.cos(toRad(homeCoords.lat));
   const stationsWithBearing = outboundStations.map(s => {
-    let bearing = Math.atan2(s.lat - homeCoords.lat, s.lon - homeCoords.lon) * 180 / Math.PI;
+    let bearing = Math.atan2(s.lat - homeCoords.lat, (s.lon - homeCoords.lon) * lonScale) * 180 / Math.PI;
     if (bearing < 0) bearing += 360;
     return { station: s, bearing };
   });
@@ -269,7 +273,7 @@ async function findRouteForStationList(line, stations, homeCoords, targetKm, tol
   const isSoftMatch = Math.abs(bestResult.actualKm - targetKm) > toleranceKm;
 
   // Package the result
-  const elevation = extractElevation(bestResult.geojson);
+  const elevationGainM = extractElevationGain(bestResult.geojson);
   const timeMin = extractTime(bestResult.geojson);
 
   const trainStatsStatus = (transitConfig && transitConfig.homeVbbId) ? 'loading' : 'failed';
@@ -288,10 +292,7 @@ async function findRouteForStationList(line, stations, homeCoords, targetKm, tol
     station: bestResult.station,
     bikeRoute: bestResult.geojson,
     bikeDistanceKm: Math.round(bestResult.actualKm * 10) / 10,
-    elevationGainM: elevation?.gain ?? 0,
-    elevationLossM: elevation?.loss ?? 0,
-    elevationMaxM: elevation?.maxElev ?? 0,
-    elevationProfile: elevation?.profile ?? [],
+    elevationGainM: elevationGainM ?? 0,
     estimatedTimeMin: timeMin ?? Math.round(bestResult.actualKm / 20 * 60),
     isSoftMatch,
     trainStatsStatus,
@@ -319,43 +320,27 @@ function findClosestIndex(sortedStations, homeCoords, targetCrowFlies) {
   return bestIdx;
 }
 
-/**
- * Haversine distance between two {lat, lon} points in km.
- */
-export function haversineKm(a, b) {
-  const R = 6371;
-  const dLat = toRad(b.lat - a.lat);
-  const dLon = toRad(b.lon - a.lon);
-  const sinDlat = Math.sin(dLat / 2);
-  const sinDlon = Math.sin(dLon / 2);
-  const h = sinDlat * sinDlat + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * sinDlon * sinDlon;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function toRad(deg) {
-  return deg * Math.PI / 180;
-}
-
-function estimateFallbackTime(km) {
-  // Rough estimate: 20 km/h average cycling speed
-  return Math.round(km / 20 * 60);
-}
-
 // --- Asynchronous Transit Queue Processing ---
 
 const transitQueue = [];
 let isProcessingQueue = false;
+// Incremented on every clear; lets an in-flight loop detect that a new search
+// started while it was awaiting, so two loops never process the same queue.
+let queueGeneration = 0;
 
 export function clearTransitQueue() {
   transitQueue.length = 0;
+  queueGeneration++;
   isProcessingQueue = false;
 }
 
 async function processTransitQueue() {
   if (isProcessingQueue || transitQueue.length === 0) return;
   isProcessingQueue = true;
+  const myGeneration = queueGeneration;
 
   while (transitQueue.length > 0) {
+    if (myGeneration !== queueGeneration) return; // superseded by a new search
     const { result, transitConfig, done, total, onProgress } = transitQueue.shift();
 
     try {
@@ -381,6 +366,8 @@ async function processTransitQueue() {
       console.warn(`Background transit route query failed for ${result.station.name}:`, err.message);
       result.trainStatsStatus = 'failed';
     }
+
+    if (myGeneration !== queueGeneration) return; // don't report into a new search's UI
 
     if (onProgress) {
       onProgress(done, total, { ...result, isTrainUpdate: true });

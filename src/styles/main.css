@@ -2,7 +2,7 @@
    Train + Bike Tour Planner — Design System
    ===================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Inter is loaded via <link> in index.html (preconnect + stylesheet) */
 
 /* --- Custom Properties -------------------------------- */
 :root {
@@ -57,7 +57,7 @@
   --panel-left: 20px;
   --sidebar-right: 20px;
   --sidebar-top: 20px;
-  --elevation-bottom: 20px;
+  --details-panel-bottom: 20px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -924,6 +924,11 @@ input[type="range"]::-moz-range-track {
   border-color: var(--route-color, var(--accent));
 }
 
+.route-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .route-card.soft-match {
   background: var(--surface-soft);
   border-style: dashed;
@@ -1162,7 +1167,7 @@ input[type="range"]::-moz-range-track {
 /* --- Route Details Panel ---------------------------- */
 #route-details-panel {
   position: fixed;
-  bottom: var(--elevation-bottom);
+  bottom: var(--details-panel-bottom);
   left: 50%;
   transform: translateX(-50%);
   width: min(600px, calc(100vw - 40px));
@@ -1328,6 +1333,27 @@ input[type="range"]::-moz-range-track {
 /* --- Utilities -------------------------------------- */
 .hidden {
   display: none !important;
+}
+
+/* Error toast — sits above the mobile sheet via --sheet-bottom */
+.error-toast {
+  position: fixed;
+  bottom: calc(var(--sheet-bottom, 0px) + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 89, 94, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: min(400px, calc(100vw - 40px));
+  text-align: center;
+  animation: fadeIn 0.2s both;
 }
 
 .invisible {

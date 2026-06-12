@@ -3,13 +3,15 @@
  * Converts BRouter GeoJSON routes to GPX format and triggers browser download.
  */
 
+import { formatTime, sanitizeFilename } from '../utils.js';
+
 /**
  * Export a single route as a GPX file.
  *
  * @param {object} result - Route result from stationFinder
  */
 export function exportRouteAsGPX(result) {
-  const filename = `${result.lines.map(l => l.id).join('_')} - ${result.station.name} to home.gpx`;
+  const filename = sanitizeFilename(`${result.lines.map(l => l.id).join('_')} - ${result.station.name} to home.gpx`);
   const gpx = buildGPX([result]);
   downloadFile(gpx, filename, 'application/gpx+xml');
 }
@@ -66,13 +68,6 @@ ${trkpts}
 
 function extractCoords(geojson) {
   return geojson?.features?.[0]?.geometry?.coordinates ?? [];
-}
-
-function formatTime(minutes) {
-  if (minutes == null) return 'unknown';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 function escapeXml(str) {

@@ -217,14 +217,18 @@ export function startSearchMode() {
   showProgressPill('Finding routes…', 0);
 }
 
-/** Update the progress pill during search (0–100) */
-export function updateSearchProgress(done, total) {
+/** Update the progress pill during search. Optionally shows the last found route. */
+export function updateSearchProgress(done, total, foundLabel) {
   if (!progressPill) return;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const fill = progressPill.querySelector('.mpp-bar-fill');
   const text = progressPill.querySelector('.mpp-text');
   if (fill) fill.style.width = `${pct}%`;
-  if (text) text.textContent = `Finding routes… ${done}/${total}`;
+  if (text) {
+    text.textContent = foundLabel
+      ? `${done}/${total} · ✓ ${foundLabel}`
+      : `Finding routes… ${done}/${total}`;
+  }
 }
 
 function showProgressPill(msg, pct) {
@@ -238,10 +242,6 @@ function showProgressPill(msg, pct) {
 
 function hideProgressPill() {
   progressPill?.classList.add('hidden');
-}
-
-export function isMobileActive() {
-  return isMobile() && isInitialized;
 }
 
 // ---------------------------------------------------------------------------

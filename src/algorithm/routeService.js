@@ -77,44 +77,21 @@ export function extractDistance(geojson) {
 }
 
 /**
- * Extract elevation data from a BRouter GeoJSON response.
- * Returns { gain, loss, maxElev, profile: [{dist, elev}] }
+ * Extract total elevation gain in meters from a BRouter GeoJSON response.
+ * (Berlin's surroundings are flat, so gain is only used for the GPX description.)
  */
-export function extractElevation(geojson) {
-  if (!geojson?.features?.[0]) return null;
-  const feature = geojson.features[0];
-  const coords = feature.geometry?.coordinates;
+export function extractElevationGain(geojson) {
+  const coords = geojson?.features?.[0]?.geometry?.coordinates;
   if (!coords?.length) return null;
 
-  let gain = 0, loss = 0, maxElev = -Infinity;
-  let cumulativeDist = 0;
-  const profile = [];
-
-  for (let i = 0; i < coords.length; i++) {
-    const [lon, lat, elev] = coords[i];
+  let gain = 0;
+  let prevElev = null;
+  for (const [, , elev] of coords) {
     if (elev == null) continue;
-
-    if (i > 0) {
-      const [prevLon, prevLat, prevElev] = coords[i - 1];
-      const segDist = haversineKm({ lat, lon }, { lat: prevLat, lon: prevLon });
-      cumulativeDist += segDist;
-      if (prevElev != null) {
-        const diff = elev - prevElev;
-        if (diff > 0) gain += diff;
-        else loss += Math.abs(diff);
-      }
-    }
-
-    maxElev = Math.max(maxElev, elev);
-    profile.push({ dist: cumulativeDist, elev });
+    if (prevElev != null && elev > prevElev) gain += elev - prevElev;
+    prevElev = elev;
   }
-
-  return {
-    gain: Math.round(gain),
-    loss: Math.round(loss),
-    maxElev: maxElev === -Infinity ? 0 : Math.round(maxElev),
-    profile
-  };
+  return Math.round(gain);
 }
 
 /**
@@ -126,13 +103,6 @@ export function extractTime(geojson) {
   const seconds = parseFloat(props['total-time']);
   if (isNaN(seconds)) return null;
   return Math.round(seconds / 60);
-}
-
-/**
- * Clear the route cache (useful when profile changes).
- */
-export function clearCache() {
-  routeCache.clear();
 }
 
 // --- Helpers ---
@@ -156,20 +126,6 @@ async function fetchWithTimeout(url, timeoutMs) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function haversineKm(a, b) {
-  const R = 6371;
-  const dLat = toRad(b.lat - a.lat);
-  const dLon = toRad(b.lon - a.lon);
-  const sinDlat = Math.sin(dLat / 2);
-  const sinDlon = Math.sin(dLon / 2);
-  const h = sinDlat * sinDlat + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * sinDlon * sinDlon;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function toRad(deg) {
-  return deg * Math.PI / 180;
 }
 
 // --- VBB Transit helpers ---
@@ -366,22 +322,18 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
         const transitLegsCount = legs.filter(leg => leg.line).length;
         const transfers = Math.max(0, transitLegsCount - 1);
         
-        // Extract occupancy & look for bus replacement service indication
+        // Extract occupancy & look for bus replacement service indication.
+        // Prefer the structured loadFactor field when the API provides it,
+        // falling back to free-text remark parsing.
         let occupancy = 'low';
         let hasSEV = false;
-        
+
         legs.forEach(leg => {
+          occupancy = maxOccupancy(occupancy, legOccupancy(leg));
           const remarks = leg.remarks || [];
           remarks.forEach(rem => {
             if (rem.text) {
               const txt = rem.text.toLowerCase();
-              if (txt.includes('occupancy') || txt.includes('auslastung')) {
-                if (txt.includes('medium') || txt.includes('mäßig')) {
-                  occupancy = 'medium';
-                } else if (txt.includes('high') || txt.includes('hoch') || txt.includes('sehr hoch') || txt.includes('very high') || txt.includes('packed')) {
-                  occupancy = 'high';
-                }
-              }
               if (rem.code === 'EV' || txt.includes('ersatzverkehr') || txt.includes('replacement bus')) {
                 hasSEV = true;
               }
@@ -444,6 +396,36 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
     console.warn(`fetchConnection failed from ${fromStopId} to ${toStopId}:`, err.message);
   }
   return null;
+}
+
+/**
+ * Determine the occupancy level ('low' | 'medium' | 'high') for a single leg.
+ * Uses the structured hafas loadFactor when present, otherwise parses remarks.
+ */
+function legOccupancy(leg) {
+  const lf = (leg.loadFactor || '').toLowerCase();
+  if (lf) {
+    if (lf.includes('very-high') || lf.includes('exceptionally-high') || lf === 'high') return 'high';
+    if (lf.includes('medium')) return 'medium'; // covers 'medium' and 'low-to-medium'
+    return 'low';
+  }
+
+  let occ = 'low';
+  for (const rem of leg.remarks || []) {
+    if (!rem.text) continue;
+    const txt = rem.text.toLowerCase();
+    if (txt.includes('occupancy') || txt.includes('auslastung')) {
+      if (txt.includes('hoch') || txt.includes('high') || txt.includes('packed')) return 'high';
+      if (txt.includes('medium') || txt.includes('mäßig')) occ = 'medium';
+    }
+  }
+  return occ;
+}
+
+const OCCUPANCY_RANK = { low: 0, medium: 1, high: 2 };
+
+function maxOccupancy(a, b) {
+  return OCCUPANCY_RANK[b] > OCCUPANCY_RANK[a] ? b : a;
 }
 
 /**
