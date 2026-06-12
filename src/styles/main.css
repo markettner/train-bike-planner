@@ -1422,7 +1422,7 @@ input[type="range"]::-moz-range-track {
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--border-glass);
   box-shadow: var(--shadow-panel);
-  transition: width var(--transition-slow), max-height var(--transition-slow), border-radius var(--transition-slow), background var(--transition);
+  transition: width var(--transition-slow), height var(--transition-slow), border-radius var(--transition-slow), background var(--transition);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1430,7 +1430,7 @@ input[type="range"]::-moz-range-track {
 
 #help-panel.collapsed {
   width: 90px;
-  max-height: 38px;
+  height: 38px;
   border-radius: 19px;
   cursor: pointer;
 }
@@ -1480,6 +1480,21 @@ input[type="range"]::-moz-range-track {
 
 #help-panel:not(.collapsed) #help-trigger {
   display: none;
+}
+
+/* While the panel resizes (open or close), keep the content rendered at its
+   expanded layout — clipped by the panel — and the trigger hidden, so the
+   animation reveals/conceals the final layout instead of swapping content. */
+#help-panel.animating #help-trigger {
+  display: none;
+}
+
+#help-panel.collapsed.animating #help-content {
+  display: flex;
+}
+
+#help-panel.collapsed:not(.animating) #help-trigger {
+  animation: fadeIn var(--transition);
 }
 
 #help-grid {

@@ -171,17 +171,66 @@ export function initControls(options = {}) {
 
   // --- Collapse/Expand Help panel ---
   const helpPanel = document.getElementById('help-panel');
+  const helpContent = document.getElementById('help-content');
   const helpCloseBtn = document.getElementById('help-close-btn');
+
+  // The expanded height is content-driven (height: auto), which CSS can't
+  // transition to. Measure both end states and animate explicit pixel sizes
+  // so width and height reach their final values at the same time.
+  let helpResizeCleanup = null;
+  function resizeHelpPanel(collapse) {
+    helpResizeCleanup?.();
+
+    const startW = helpPanel.offsetWidth;
+    const startH = helpPanel.offsetHeight;
+    // Measure the target size with transitions off: while one is in flight,
+    // offsetWidth/Height report the interpolated value, not the end state.
+    helpPanel.style.transition = 'none';
+    helpPanel.classList.toggle('collapsed', collapse);
+    helpPanel.classList.add('animating');
+    helpPanel.style.width = '';
+    helpPanel.style.height = '';
+    const targetW = helpPanel.offsetWidth;
+    const targetH = helpPanel.offsetHeight;
+
+    // Lay the content out at the expanded width so the shrinking/growing
+    // panel clips it instead of reflowing the text mid-animation.
+    helpContent.style.width = `${Math.max(startW, targetW)}px`;
+    helpPanel.style.width = `${startW}px`;
+    helpPanel.style.height = `${startH}px`;
+    helpPanel.offsetHeight; // commit the start size before transitioning
+    helpPanel.style.transition = '';
+    helpPanel.style.width = `${targetW}px`;
+    helpPanel.style.height = `${targetH}px`;
+
+    const cleanup = () => {
+      helpResizeCleanup?.();
+      helpPanel.classList.remove('animating');
+      helpPanel.style.width = '';
+      helpPanel.style.height = '';
+      helpContent.style.width = '';
+    };
+    const onEnd = (e) => {
+      if (e.target === helpPanel && e.propertyName === 'width') cleanup();
+    };
+    helpPanel.addEventListener('transitionend', onEnd);
+    const fallback = setTimeout(cleanup, 500);
+    helpResizeCleanup = () => {
+      helpPanel.removeEventListener('transitionend', onEnd);
+      clearTimeout(fallback);
+      helpResizeCleanup = null;
+    };
+  }
 
   helpPanel?.addEventListener('click', () => {
     if (helpPanel.classList.contains('collapsed')) {
-      helpPanel.classList.remove('collapsed');
+      resizeHelpPanel(false);
     }
   });
 
   helpCloseBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    helpPanel?.classList.add('collapsed');
+    resizeHelpPanel(true);
   });
 
   // --- Public API ---
