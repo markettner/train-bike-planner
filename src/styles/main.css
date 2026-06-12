@@ -17,11 +17,11 @@
   --text-primary: #f0f2f8;
   --text-secondary: #8b92a8;
   --text-muted: #5a6278;
-  --text-accent: #6eb5ff;
+  --text-accent: #85c167;
 
-  --accent: #4d9fff;
-  --accent-hover: #6eb5ff;
-  --accent-dim: rgba(77, 159, 255, 0.15);
+  --accent: #6aa84f;
+  --accent-hover: #85c167;
+  --accent-dim: rgba(106, 168, 79, 0.15);
 
   --success: #52a675;
   --warning: #ffca3a;
@@ -62,14 +62,14 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-glass: rgba(255, 255, 255, 0.90);
+    --bg-glass: rgba(253, 254, 250, 0.90);
     --border-glass: rgba(0, 0, 0, 0.08);
     --text-primary: #1a1d2e;
     --text-secondary: #5a6278;
     --text-muted: #8b92a8;
-    --surface: rgba(248, 249, 252, 0.98);
-    --surface-hover: rgba(240, 243, 250, 0.98);
-    --surface-active: rgba(230, 236, 248, 0.98);
+    --surface: rgba(248, 251, 245, 0.98);
+    --surface-hover: rgba(240, 246, 236, 0.98);
+    --surface-active: rgba(230, 241, 225, 0.98);
     --surface-soft: rgba(0, 0, 0, 0.03);
     --shadow-panel: 0 8px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.1);
   }
@@ -378,14 +378,14 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(77, 159, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(106, 168, 79, 0.4);
   transition: transform var(--transition), box-shadow var(--transition);
   margin-top: -7px; /* (4px track height - 18px thumb height) / 2 */
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 2px 14px rgba(77, 159, 255, 0.6);
+  box-shadow: 0 2px 14px rgba(106, 168, 79, 0.6);
 }
 
 input[type="range"]::-moz-range-thumb {
@@ -395,13 +395,13 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: var(--accent);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(77, 159, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(106, 168, 79, 0.4);
   transition: transform var(--transition), box-shadow var(--transition);
 }
 
 input[type="range"]::-moz-range-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 2px 14px rgba(77, 159, 255, 0.6);
+  box-shadow: 0 2px 14px rgba(106, 168, 79, 0.6);
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
@@ -475,7 +475,7 @@ input[type="range"]::-moz-range-track {
 
 .datetime-inputs input[type="date"]:focus,
 .datetime-inputs input[type="time"]:focus {
-  border-color: rgba(77, 159, 255, 0.5);
+  border-color: rgba(106, 168, 79, 0.5);
   background: var(--surface-hover);
 }
 
@@ -515,7 +515,7 @@ input[type="range"]::-moz-range-track {
 
 .time-type-option input[type="radio"]:checked + .radio-label {
   background: var(--accent-dim);
-  border-color: rgba(77, 159, 255, 0.3);
+  border-color: rgba(106, 168, 79, 0.3);
   color: var(--accent-hover);
 }
 
@@ -655,7 +655,7 @@ input[type="range"]::-moz-range-track {
 
 .profile-btn.active {
   background: var(--accent-dim);
-  border-color: rgba(77, 159, 255, 0.4);
+  border-color: rgba(106, 168, 79, 0.4);
   color: var(--accent-hover);
 }
 
@@ -675,7 +675,7 @@ input[type="range"]::-moz-range-track {
 .calculate-btn {
   width: 100%;
   padding: 13px 20px;
-  background: linear-gradient(135deg, #4d9fff 0%, #6a4c93 100%);
+  background: linear-gradient(135deg, #6aa84f 0%, #3c6c30 100%);
   color: #fff;
   border: none;
   border-radius: var(--border-radius-sm);
@@ -689,13 +689,13 @@ input[type="range"]::-moz-range-track {
   justify-content: center;
   gap: 8px;
   letter-spacing: 0.01em;
-  box-shadow: 0 4px 16px rgba(77, 159, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(106, 168, 79, 0.25);
   margin-bottom: 8px;
 }
 
 .calculate-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(77, 159, 255, 0.4);
+  box-shadow: 0 6px 24px rgba(106, 168, 79, 0.4);
 }
 
 .calculate-btn:active {
@@ -735,7 +735,7 @@ input[type="range"]::-moz-range-track {
   padding: 4px 10px;
   background: transparent;
   color: var(--accent);
-  border: 1px solid rgba(77, 159, 255, 0.3);
+  border: 1px solid rgba(106, 168, 79, 0.3);
   border-radius: var(--border-radius-xs);
   font-family: var(--font);
   font-size: 11px;
@@ -748,7 +748,7 @@ input[type="range"]::-moz-range-track {
 
 .small-btn:hover {
   background: var(--accent-dim);
-  border-color: rgba(77, 159, 255, 0.5);
+  border-color: rgba(106, 168, 79, 0.5);
 }
 
 .icon-btn {
@@ -1240,7 +1240,7 @@ input[type="range"]::-moz-range-track {
   background: #fff;
   border: 3px solid var(--accent);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(77, 159, 255, 0.25), var(--shadow-card);
+  box-shadow: 0 0 0 4px rgba(106, 168, 79, 0.25), var(--shadow-card);
   transition: var(--transition);
   display: flex !important;
   align-items: center !important;
@@ -1366,7 +1366,7 @@ input[type="range"]::-moz-range-track {
   stroke: var(--accent);
   stroke-width: 1.5;
   stroke-dasharray: 8, 6;
-  fill: rgba(77, 159, 255, 0.04);
+  fill: rgba(106, 168, 79, 0.04);
 }
 
 /* Route polylines — base style applied in JS */
@@ -1621,7 +1621,7 @@ input[type="range"]::-moz-range-track {
   width: 20px;
   height: 20px;
   border-width: 2px;
-  border-color: rgba(77, 159, 255, 0.2);
+  border-color: rgba(106, 168, 79, 0.2);
   border-top-color: var(--accent);
 }
 
@@ -2125,7 +2125,7 @@ body.sidebar-open #route-details-panel {
   .peek-spinner {
     width: 12px;
     height: 12px;
-    border: 2px solid rgba(77, 159, 255, 0.25);
+    border: 2px solid rgba(106, 168, 79, 0.25);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -2216,7 +2216,7 @@ body.sidebar-open #route-details-panel {
     gap: 8px;
     padding: 13px 20px;
     margin: 12px 16px 16px;
-    background: linear-gradient(135deg, #4d9fff 0%, #6a4c93 100%);
+    background: linear-gradient(135deg, #6aa84f 0%, #3c6c30 100%);
     color: #fff;
     border: none;
     border-radius: var(--border-radius-sm);
@@ -2230,12 +2230,12 @@ body.sidebar-open #route-details-panel {
     width: calc(100% - 32px);
     min-height: 52px;
     letter-spacing: 0.01em;
-    box-shadow: 0 4px 16px rgba(77, 159, 255, 0.25);
+    box-shadow: 0 4px 16px rgba(106, 168, 79, 0.25);
   }
 
   .mobile-new-search-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(77, 159, 255, 0.4);
+    box-shadow: 0 6px 24px rgba(106, 168, 79, 0.4);
   }
 
   .mobile-new-search-btn:active {
