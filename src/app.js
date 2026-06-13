@@ -22,7 +22,6 @@ import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRo
 const DEFAULT_HOME = { lat: 52.5219, lon: 13.4132, name: 'Alexanderplatz, Berlin' };
 
 const SETTINGS_KEY = 'tbp-settings';
-const HOME_KEY = 'tbp-home';
 
 let homeCoords = { ...DEFAULT_HOME };
 let linesData = null;
@@ -58,13 +57,8 @@ async function main() {
   const savedSettings = loadJson(SETTINGS_KEY);
   if (savedSettings) controls.setValues(savedSettings);
 
-  // 3. Restore the saved home location, or request geolocation
-  const savedHome = loadJson(HOME_KEY);
-  if (savedHome && Number.isFinite(savedHome.lat) && Number.isFinite(savedHome.lon)) {
-    setHome(savedHome);
-  } else {
-    detectLocation();
-  }
+  // 3. Request geolocation on every load
+  detectLocation();
 
   // 4. Load train line data and station mappings
   await Promise.all([loadLinesData(), loadStationMappings()]);
@@ -181,7 +175,6 @@ function setHome(coords) {
   setHomeMarker(coords);
   controls.setHomeName(coords.name || `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`);
   checkSettingsStale();
-  saveJson(HOME_KEY, coords);
 }
 
 async function handleHomeChange(coords) {
