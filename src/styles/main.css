@@ -220,9 +220,10 @@ html, body {
   gap: 6px;
 }
 
-.title-train, .title-bike {
-  font-size: 18px;
-  line-height: 1;
+.panel-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .title-text {
