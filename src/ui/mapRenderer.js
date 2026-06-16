@@ -63,6 +63,10 @@ export function initMap(options = {}) {
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   (prefersDark ? darkTiles : lightTiles).addTo(map);
 
+  // Bike routing credit — layer-independent, so it stays put when the basemap
+  // switches between the light (MapLibre) and dark (raster) tile layers.
+  map.attributionControl.addAttribution('Routing <a href="https://brouter.de">BRouter</a>');
+
   // Listen for theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     map.removeLayer(darkTiles);
