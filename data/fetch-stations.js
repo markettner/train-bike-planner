@@ -359,27 +359,49 @@ function overpassQuery(query, serverUrl = 'https://overpass-api.de/api/interpret
 
 async function fetchNodeNames(nodeIds) {
   const chunkSize = 400;
+  const maxAttempts = 4; // per chunk, across all servers
   const nodeNames = new Map();
+
+  const totalChunks = Math.ceil(nodeIds.length / chunkSize);
 
   for (let i = 0; i < nodeIds.length; i += chunkSize) {
     if (i > 0) {
-      // Sleep to avoid rate limiting (HTTP 429) on the primary server
+      // Sleep to avoid rate limiting (HTTP 429/406) on the primary server
       await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
     const chunk = nodeIds.slice(i, i + chunkSize);
     const query = `[out:json][timeout:30];node(id:${chunk.join(',')});out tags;`;
+    const chunkNum = Math.floor(i / chunkSize) + 1;
 
-    console.log(`   Fetching station names chunk ${Math.floor(i / chunkSize) + 1}/${Math.ceil(nodeIds.length / chunkSize)}…`);
+    console.log(`   Fetching station names chunk ${chunkNum}/${totalChunks}…`);
 
+    // Retry the whole chunk (each attempt itself falls back across all
+    // servers). A dropped chunk used to silently turn every station in it into
+    // a "Station <id>" placeholder; instead we retry with backoff and, if it
+    // still fails, abort so we never commit placeholder names.
     let result = null;
-    try {
-      result = await runQueryWithFallback(query);
-    } catch (err) {
-      console.error('   ❌ Failed to fetch station names from all servers:', err.message);
+    let lastErr = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        result = await runQueryWithFallback(query);
+        break;
+      } catch (err) {
+        lastErr = err;
+        const backoffMs = 2000 * attempt;
+        console.warn(`   ⚠️  Name chunk ${chunkNum} attempt ${attempt}/${maxAttempts} failed: ${err.message}. Retrying in ${backoffMs}ms…`);
+        await new Promise(resolve => setTimeout(resolve, backoffMs));
+      }
     }
 
-    if (result && result.elements) {
+    if (!result) {
+      throw new Error(
+        `Failed to fetch station names for chunk ${chunkNum}/${totalChunks} after ${maxAttempts} attempts: ${lastErr?.message}. ` +
+        `Aborting so we don't overwrite lines.json with "Station <id>" placeholders.`
+      );
+    }
+
+    if (result.elements) {
       for (const el of result.elements) {
         if (el.type === 'node' && el.tags?.name) {
           nodeNames.set(el.id, el.tags.name);
