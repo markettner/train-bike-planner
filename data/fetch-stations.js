@@ -30,6 +30,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { optimizeGeometry, optimizeStations } from './geometry-utils.js';
+import { fetchWikipediaLines } from './wikipedia-lines.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -192,31 +193,32 @@ function pickTrips(tripsByDirection) {
   return chosen;
 }
 
-// --- Main ---
-async function main() {
-  console.log('🚆 Building lines.json from the VBB HAFAS API…');
-
-  // 1. Resolve hubs
-  console.log(`🔎 Resolving ${HUB_NAMES.length} hub stations…`);
+// Resolve station names to VBB stops, skipping any whose ID is already known.
+async function resolveHubs(names, seenIds) {
   const hubs = [];
-  for (const name of HUB_NAMES) {
+  for (const name of names) {
     const hub = await resolveHub(name);
-    if (hub) hubs.push(hub);
+    if (hub && !seenIds.has(hub.id)) {
+      seenIds.add(hub.id);
+      hubs.push(hub);
+    }
   }
-  console.log(`   Resolved ${hubs.length}/${HUB_NAMES.length} hubs.`);
+  return hubs;
+}
 
-  // 2. Harvest departures → candidate trips per line.
-  //    Key by the network-stable line.id (not the displayed ref) so that two
-  //    different lines sharing a number across networks — e.g. a Brandenburg
-  //    RB33 and a Saxony-Anhalt RB33 — don't get merged into one.
-  //    lineId → { ref, byDir: Map(direction → Set(tripId)) }
-  const candidates = new Map();
-  console.log('🛰  Harvesting departures…');
+// Harvest departures at the given hubs into the candidate map.
+// Keyed by the network-stable line.id (not the displayed ref) so two lines
+// sharing a number across networks — a Brandenburg RB33 and a Saxony-Anhalt
+// RB33 — don't get merged.  lineId → { ref, byDir: Map(direction → Set(tripId)) }
+async function harvestInto(candidates, hubs, restrictRefs = null) {
   for (const hub of hubs) {
     const departures = await harvestDepartures(hub.id);
     for (const dep of departures) {
       const ref = normRef(dep.line?.name);
       if (!ref || !LINE_REF_RE.test(ref) || EXCLUDE_LINES.has(ref)) continue;
+      // During self-heal we harvest far termini, which also serve foreign
+      // lines — only pick up the specific lines we're trying to recover.
+      if (restrictRefs && !restrictRefs.has(ref)) continue;
       if (!dep.tripId) continue;
       const lineId = dep.line?.id || ref;
       const dir = dep.direction || dep.destination?.name || 'unknown';
@@ -226,8 +228,79 @@ async function main() {
       byDir.get(dir).add(dep.tripId);
     }
   }
-  const refList = [...new Set([...candidates.values()].map(c => c.ref))].sort();
-  console.log(`   Found ${candidates.size} candidate lines (${refList.length} refs): ${refList.join(', ')}`);
+}
+
+const refsOf = candidates => new Set([...candidates.values()].map(c => c.ref));
+
+// Compare the built lines against Wikipedia's canonical BB line list and write
+// data/qa-report.json (no timestamp, so it only changes when findings change).
+function writeQaReport(lines, wiki, selfHealed) {
+  const builtRefs = new Set(lines.map(l => l.ref));
+  const missing = [...wiki.expected].filter(r => !builtRefs.has(r)).sort();
+  const unexpected = lines
+    .filter(l => /^(RE|RB)\d+$/.test(l.ref) && !wiki.expected.has(l.ref))
+    .map(l => ({ ref: l.ref, name: l.name, note: wiki.foreignRefs.has(l.ref) ? 'listed only as out-of-state on Wikipedia' : 'not on the Berlin-Brandenburg list' }))
+    .sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true }));
+  const uncolored = lines.filter(l => l.color === DEFAULT_COLOR).map(l => l.ref).sort();
+
+  const report = {
+    expectedBerlinBrandenburg: wiki.expected.size,
+    built: lines.length,
+    selfHealed: selfHealed.sort(),
+    missing,
+    unexpected,
+    uncolored,
+  };
+  fs.writeFileSync(path.join(__dirname, 'qa-report.json'), JSON.stringify(report, null, 2) + '\n');
+
+  console.log('\n📋 QA vs Wikipedia:');
+  console.log(`   missing (expected but absent): ${missing.length ? missing.join(', ') : 'none'}`);
+  console.log(`   unexpected (foreign/unknown):  ${unexpected.length ? unexpected.map(u => u.ref).join(', ') : 'none'}`);
+  console.log(`   uncoloured:                    ${uncolored.length ? uncolored.join(', ') : 'none'}`);
+  if (missing.length) console.log('   ↳ "missing" lines are likely construction-suspended (verify against VBB if unexpected).');
+}
+
+// --- Main ---
+async function main() {
+  console.log('🚆 Building lines.json from the VBB HAFAS API…');
+
+  // 1. Resolve curated hubs
+  console.log(`🔎 Resolving ${HUB_NAMES.length} hub stations…`);
+  const harvestedIds = new Set();
+  const hubs = await resolveHubs(HUB_NAMES, harvestedIds);
+  console.log(`   Resolved ${hubs.length} hubs.`);
+
+  // 2. Harvest departures → candidate trips per line
+  const candidates = new Map();
+  console.log('🛰  Harvesting departures…');
+  await harvestInto(candidates, hubs);
+  console.log(`   Found ${candidates.size} candidate lines (${refsOf(candidates).size} refs).`);
+
+  // 2b. QA against Wikipedia + self-heal discovery gaps (best-effort).
+  let wiki = null;
+  const selfHealed = [];
+  try {
+    console.log('📖 Fetching Wikipedia line list for QA…');
+    wiki = await fetchWikipediaLines(UA);
+    console.log(`   Wikipedia lists ${wiki.expected.size} Berlin-Brandenburg RE/RB lines.`);
+  } catch (err) {
+    console.warn(`   ⚠️  Wikipedia QA unavailable: ${err.message} — proceeding without self-heal.`);
+  }
+  if (wiki) {
+    const seen = refsOf(candidates);
+    const missing = [...wiki.expected].filter(r => !seen.has(r));
+    if (missing.length) {
+      console.log(`🩹 Self-heal: ${missing.length} expected line(s) not yet seen: ${missing.join(', ')}`);
+      const names = new Set();
+      for (const ref of missing) (wiki.termini.get(ref) || []).forEach(n => names.add(n));
+      const healHubs = await resolveHubs([...names], harvestedIds);
+      console.log(`   Harvesting ${healHubs.length} extra hub(s) from missing-line routes…`);
+      await harvestInto(candidates, healHubs, new Set(missing));
+      const after = refsOf(candidates);
+      for (const ref of missing) if (after.has(ref)) selfHealed.push(ref);
+      console.log(`   ✓ Recovered: ${selfHealed.length ? selfHealed.join(', ') : 'none'}`);
+    }
+  }
 
   // 3. For each line, fetch chosen trips and union stops + geometry
   const builtLines = [];
@@ -366,6 +439,8 @@ async function main() {
   console.log(`   S-Bahn:   ${lines.filter(l => l.type === 's-bahn').length}`);
   console.log(`   Regional: ${lines.filter(l => l.type === 'regional').length}`);
   console.log(`   Stations: ${lines.reduce((n, l) => n + l.stations.length, 0)} (${Object.keys(mapping).length} unique)`);
+
+  if (wiki) writeQaReport(lines, wiki, selfHealed);
 }
 
 main().catch(err => {

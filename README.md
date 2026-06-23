@@ -49,6 +49,13 @@ line/station data from the VBB API and commits any changes. (`station_mappings.j
 now an identity map — stations carry their VBB stop ID natively — kept for the
 frontend's existing lookup.)
 
+The build cross-checks itself against the German Wikipedia [list of Berlin-Brandenburg
+rail lines](https://de.wikipedia.org/wiki/Liste_der_Eisenbahnlinien_in_Brandenburg_und_Berlin):
+lines that list but aren't found via the VBB hubs are self-healed by harvesting their
+route's termini, and the remainder (missing / unexpected / uncoloured) is written to
+`data/qa-report.json` for review. "Missing" lines are usually construction-suspended —
+the VBB API stays the source of truth for what's actually running.
+
 ## Deployment
 
 Pushes to `main` (and successful data-update runs) trigger the

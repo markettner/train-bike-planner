@@ -32,9 +32,10 @@ jobs:
         run: npm ci
 
       # ── Step 1: Build lines.json from the VBB HAFAS API ────────────────────
-      # fetch-stations.js also writes station_mappings.json (identity map),
-      # since stations now carry their VBB stop ID natively — no separate
-      # mapping step is needed.
+      # fetch-stations.js also writes station_mappings.json (identity map,
+      # since stations carry their VBB stop ID natively) and qa-report.json
+      # (a cross-check against the Wikipedia line list). No separate mapping
+      # step is needed.
       - name: Fetch station data from VBB API
         run: node data/fetch-stations.js
         timeout-minutes: 15
@@ -43,7 +44,7 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          git diff --quiet data/lines.json data/station_mappings.json \
+          git diff --quiet data/lines.json data/station_mappings.json data/qa-report.json \
             && echo "changed=false" >> "$GITHUB_OUTPUT" \
             || echo "changed=true" >> "$GITHUB_OUTPUT"
 
@@ -52,7 +53,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/lines.json data/station_mappings.json
+          git add data/lines.json data/station_mappings.json data/qa-report.json
           git commit -m "chore: auto-update station data [$(date -u +'%Y-%m-%d')]"
 
           # The push can race with another commit landing on main (a manual
