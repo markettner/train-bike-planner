@@ -64,7 +64,23 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/lines.json data/station_mappings.json
           git commit -m "chore: auto-update station data [$(date -u +'%Y-%m-%d')]"
-          git push
+
+          # The push can race with another commit landing on main (a manual
+          # run overlapping the schedule, or a human push). The data files are
+          # fully regenerated from source each run, so rebasing our commit onto
+          # whatever arrived is always safe. Retry a few times before failing.
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            echo "Push attempt $attempt rejected — rebasing onto latest main and retrying…"
+            git pull --rebase --autostash origin main
+            sleep 5
+          done
+
+          echo "::error::Failed to push after 5 attempts."
+          exit 1
 
       - name: No changes detected
         if: steps.check_changes.outputs.changed == 'false'
