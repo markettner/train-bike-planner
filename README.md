@@ -22,8 +22,10 @@ connections to the stations that put you the right distance away, then routes yo
 - Vanilla JS + [Vite](https://vitejs.dev/)
 - [Leaflet](https://leafletjs.com/) + [MapLibre GL](https://maplibre.org/) for the map
 - Bike routing, elevation, and GPX tracks via [BRouter](https://brouter.de/)
-- Station & line geometry from the [Overpass API](https://overpass-api.de/), train
-  connections via the VBB transit API
+- Line routes, stations, and geometry from the [VBB transit API](https://v6.vbb.transport.rest/),
+  which also powers the live train connections. Sourcing from VBB keeps the map in
+  step with the live timetable (construction reroutes, line renumberings) instead of
+  lagging behind OpenStreetMap.
 
 ## Development
 
@@ -42,8 +44,10 @@ npm run fetch-data   # fetch fresh station/line geometry (data/fetch-stations.js
 
 Station data lives in `data/` (`lines.json`, `station_mappings.json`). It is refreshed
 automatically every day at 03:00 UTC by the
-[Update Station Data](.github/workflows/update-data.yml) workflow, which fetches geometry
-from Overpass, maps new stations to VBB stop IDs, and commits any changes.
+[Update Station Data](.github/workflows/update-data.yml) workflow, which rebuilds the
+line/station data from the VBB API and commits any changes. (`station_mappings.json` is
+now an identity map — stations carry their VBB stop ID natively — kept for the
+frontend's existing lookup.)
 
 ## Deployment
 
@@ -59,7 +63,6 @@ src/
   algorithm/        # station finding, route service, GPX export
   ui/               # map renderer, controls, route list, mobile sheet
   styles/
-data/               # station/line data + fetch scripts
-scripts/            # VBB stop-ID mapping
+data/               # station/line data + VBB fetch script
 .github/workflows/  # deploy + daily data update
 ```

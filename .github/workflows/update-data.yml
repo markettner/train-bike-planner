@@ -31,22 +31,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── Step 1: Fetch fresh line + station geometry from Overpass ──────────
-      - name: Fetch station data from Overpass API
+      # ── Step 1: Build lines.json from the VBB HAFAS API ────────────────────
+      # fetch-stations.js also writes station_mappings.json (identity map),
+      # since stations now carry their VBB stop ID natively — no separate
+      # mapping step is needed.
+      - name: Fetch station data from VBB API
         run: node data/fetch-stations.js
         timeout-minutes: 15
 
-      # ── Step 2: Map any new stations to VBB Stop IDs (incremental) ────────
-      # mapStations.js skips stations already present in station_mappings.json,
-      # so on most days this will only process a handful of new entries.
-      - name: Map new stations to VBB Stop IDs
-        run: node scripts/mapStations.js
-        timeout-minutes: 30
-        # Don't fail the whole workflow if VBB API is temporarily unavailable;
-        # we'll still redeploy with the updated geometry.
-        continue-on-error: true
-
-      # ── Step 3: Commit and push only if something actually changed ─────────
+      # ── Step 2: Commit and push only if something actually changed ─────────
       - name: Check for changes
         id: check_changes
         run: |
