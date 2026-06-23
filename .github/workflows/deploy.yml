@@ -24,10 +24,16 @@ permissions:
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
+# Serialize deployments: queue overlapping runs instead of cancelling them.
+# `push` (human commits) and `workflow_run` (the data-update bot's commits,
+# which don't fire `push` because they use GITHUB_TOKEN) can both trigger a
+# deploy close together. With cancel-in-progress, the loser was cancelled
+# mid-publish and surfaced as a failure — sometimes leaving stale content
+# live. Queueing lets the in-flight deploy finish and the latest commit
+# deploy next; GitHub keeps only the newest pending run, so it never stacks.
 concurrency:
   group: 'pages'
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
