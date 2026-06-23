@@ -55,16 +55,26 @@ const DEPARTURE_WINDOW_MIN = 720;
 const MIN_EXPECTED_LINES = 20;
 
 // Hub stations (by name) whose departures we harvest. Radial Berlin hubs catch
-// the through-running lines; outer termini catch peripheral ones.
+// the through-running lines; outer termini + junctions catch peripheral ones.
+// A line is only discovered if it passes one of these stops during the
+// departure window, so this list deliberately covers every branch junction —
+// if a line ever goes missing, add the stop where it diverges from a trunk.
 const HUB_NAMES = [
+  // Radial Berlin hubs
   'Berlin Hauptbahnhof', 'Berlin Ostkreuz', 'Berlin Gesundbrunnen',
   'Berlin Südkreuz', 'Berlin-Lichtenberg', 'Berlin-Spandau',
   'Berlin Friedrichstraße', 'Berlin Wannsee', 'Berlin Ostbahnhof',
+  'Flughafen BER Terminal 1-2',
+  // Outer termini + junctions
   'Potsdam Hauptbahnhof', 'Königs Wusterhausen', 'Cottbus, Hauptbahnhof',
   'Frankfurt (Oder)', 'Eberswalde, Hauptbahnhof', 'Oranienburg',
   'Nauen', 'Brandenburg, Hauptbahnhof', 'Jüterbog', 'Angermünde',
   'Löwenberg (Mark)', 'Senftenberg', 'Wittenberge', 'Templin Stadt',
-  'Wünsdorf-Waldstadt',
+  'Wünsdorf-Waldstadt', 'Fürstenwalde (Spree)', 'Bad Saarow Pieskow',
+  'Kremmen', 'Hennigsdorf', 'Beelitz Stadt', 'Werneuchen', 'Wriezen',
+  'Beeskow', 'Rathenow', 'Rheinsberg (Mark)', 'Schwedt (Oder)',
+  'Prenzlau', 'Neuruppin', 'Falkenberg (Elster)', 'Elsterwerda',
+  'Lübbenau (Spreewald)', 'Luckenwalde',
 ];
 
 // Official VBB line colors (used when known; unknown in-scope lines get grey
@@ -195,8 +205,11 @@ async function main() {
   }
   console.log(`   Resolved ${hubs.length}/${HUB_NAMES.length} hubs.`);
 
-  // 2. Harvest departures → candidate trips per line ref
-  //    ref → Map(direction → Set(tripId))
+  // 2. Harvest departures → candidate trips per line.
+  //    Key by the network-stable line.id (not the displayed ref) so that two
+  //    different lines sharing a number across networks — e.g. a Brandenburg
+  //    RB33 and a Saxony-Anhalt RB33 — don't get merged into one.
+  //    lineId → { ref, byDir: Map(direction → Set(tripId)) }
   const candidates = new Map();
   console.log('🛰  Harvesting departures…');
   for (const hub of hubs) {
@@ -205,19 +218,24 @@ async function main() {
       const ref = normRef(dep.line?.name);
       if (!ref || !LINE_REF_RE.test(ref) || EXCLUDE_LINES.has(ref)) continue;
       if (!dep.tripId) continue;
+      const lineId = dep.line?.id || ref;
       const dir = dep.direction || dep.destination?.name || 'unknown';
-      if (!candidates.has(ref)) candidates.set(ref, new Map());
-      const byDir = candidates.get(ref);
+      if (!candidates.has(lineId)) candidates.set(lineId, { ref, byDir: new Map() });
+      const byDir = candidates.get(lineId).byDir;
       if (!byDir.has(dir)) byDir.set(dir, new Set());
       byDir.get(dir).add(dep.tripId);
     }
   }
-  console.log(`   Found ${candidates.size} candidate lines: ${[...candidates.keys()].sort().join(', ')}`);
+  const refList = [...new Set([...candidates.values()].map(c => c.ref))].sort();
+  console.log(`   Found ${candidates.size} candidate lines (${refList.length} refs): ${refList.join(', ')}`);
 
   // 3. For each line, fetch chosen trips and union stops + geometry
-  const lines = [];
-  for (const ref of [...candidates.keys()].sort()) {
-    const tripIds = pickTrips(candidates.get(ref));
+  const builtLines = [];
+  const entries = [...candidates.entries()].sort((a, b) =>
+    a[1].ref.localeCompare(b[1].ref, undefined, { numeric: true })
+  );
+  for (const [, { ref, byDir }] of entries) {
+    const tripIds = pickTrips(byDir);
     const stations = new Map();          // vbb id → station
     const geomByDirection = new Map();   // direction → longest [ [lon,lat], ... ]
     let longestTrip = null;              // for the display name
@@ -287,7 +305,7 @@ async function main() {
       (a[0][0] - b[0][0]) || (a[0][1] - b[0][1])
     );
 
-    lines.push({
+    builtLines.push({
       id: ref,
       ref,
       type,
@@ -295,11 +313,27 @@ async function main() {
       color,
       stations: optimizeStations(stationList),
       geometry: optimizeGeometry(geometry),
+      _minDist: Math.min(...stationList.map(s => haversineKm(ALEX, s))),
     });
 
     const known = LINE_COLORS[ref] ? '' : ' (no colour — add to LINE_COLORS)';
     console.log(`  ✓ ${ref} — ${endpoints} (${stationList.length} stations, max ${maxDist.toFixed(0)} km)${known}`);
   }
+
+  // Collapse any ref still served by network-distinct lines (cross-network
+  // number collisions): keep the variant whose nearest stop is closest to
+  // Berlin — that's the one relevant to this tool.
+  const byRef = new Map();
+  for (const line of builtLines) {
+    const prev = byRef.get(line.ref);
+    if (!prev) { byRef.set(line.ref, line); continue; }
+    const keep = line._minDist < prev._minDist ? line : prev;
+    const drop = keep === line ? prev : line;
+    byRef.set(line.ref, keep);
+    console.log(`   ↺ ${line.ref}: collision — kept Berlin-closest variant, dropped "${drop.name}"`);
+  }
+  const lines = [...byRef.values()];
+  lines.forEach(l => { delete l._minDist; });
 
   // Sort: S-Bahn first, then regional, then by ref (numeric-aware)
   lines.sort((a, b) => {
