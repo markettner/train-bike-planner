@@ -78,21 +78,11 @@ const HUB_NAMES = [
   'Lübbenau (Spreewald)', 'Luckenwalde',
 ];
 
-// Official VBB line colors (used when known; unknown in-scope lines get grey
-// so newly-introduced lines still appear and can be coloured later).
-const LINE_COLORS = {
-  S1:'#DD6CA2', S2:'#007734', S25:'#007734', S26:'#007734', S3:'#0066b3',
-  S5:'#e46a1a', S7:'#7B6A9D', S8:'#55a822', S9:'#8B3A8B', S46:'#3bbbd4', S85:'#3bbbd4',
-  RE1:'#e5001c', RE2:'#bc0053', RE3:'#6e1985', RE4:'#6e1985', RE5:'#0066b3',
-  RE6:'#007a4d', RE7:'#007a4d', RE8:'#e5001c', RE10:'#e5001c', RE11:'#e5001c',
-  RE13:'#bc0053', RE15:'#e5001c', RE18:'#0066b3', RE20:'#bc0053', RE30:'#007a4d',
-  RB10:'#e5001c', RB12:'#e5001c', RB14:'#e5001c', RB20:'#7B6A9D', RB21:'#7B6A9D',
-  RB22:'#3bbbd4', RB23:'#3bbbd4', RB24:'#55a822', RB25:'#e5001c', RB26:'#e5001c',
-  RB31:'#0066b3', RB32:'#55a822', RB33:'#007a4d', RB35:'#007a4d', RB36:'#007a4d',
-  RB43:'#e46a1a', RB49:'#0066b3', RB54:'#0066b3', RB55:'#007a4d', RB60:'#007a4d',
-  RB63:'#007a4d', RB66:'#007a4d', FEX:'#e5001c',
-};
-const DEFAULT_COLOR = '#888888';
+// Two muted overlay colors (Apple-Maps style): every S-Bahn line shares one,
+// every other train another. Per-line brand colors made the overlay too noisy
+// once bike routes are drawn on top.
+const SBAHN_COLOR = '#469C63';
+const TRAIN_COLOR = '#3B74CC';
 
 // Ring lines, U-Bahn, and short stubs we never want.
 const EXCLUDE_LINES = new Set(['S41', 'S42', 'S45', 'S47', 'S75', 'S15']);
@@ -232,31 +222,32 @@ async function harvestInto(candidates, hubs, restrictRefs = null) {
 
 const refsOf = candidates => new Set([...candidates.values()].map(c => c.ref));
 
+// A built RE/RB line is "foreign" if it isn't on Wikipedia's Berlin-Brandenburg
+// list. These are dropped from the output (allowlist filter).
+function foreignNote(ref, wiki) {
+  return wiki.foreignRefs.has(ref)
+    ? 'listed only as out-of-state on Wikipedia'
+    : 'not on the Berlin-Brandenburg list';
+}
+
 // Compare the built lines against Wikipedia's canonical BB line list and write
 // data/qa-report.json (no timestamp, so it only changes when findings change).
-function writeQaReport(lines, wiki, selfHealed) {
+function writeQaReport(lines, wiki, selfHealed, filtered) {
   const builtRefs = new Set(lines.map(l => l.ref));
   const missing = [...wiki.expected].filter(r => !builtRefs.has(r)).sort();
-  const unexpected = lines
-    .filter(l => /^(RE|RB)\d+$/.test(l.ref) && !wiki.expected.has(l.ref))
-    .map(l => ({ ref: l.ref, name: l.name, note: wiki.foreignRefs.has(l.ref) ? 'listed only as out-of-state on Wikipedia' : 'not on the Berlin-Brandenburg list' }))
-    .sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true }));
-  const uncolored = lines.filter(l => l.color === DEFAULT_COLOR).map(l => l.ref).sort();
 
   const report = {
     expectedBerlinBrandenburg: wiki.expected.size,
     built: lines.length,
     selfHealed: selfHealed.sort(),
     missing,
-    unexpected,
-    uncolored,
+    filtered: filtered.sort((a, b) => a.ref.localeCompare(b.ref, undefined, { numeric: true })),
   };
   fs.writeFileSync(path.join(__dirname, 'qa-report.json'), JSON.stringify(report, null, 2) + '\n');
 
   console.log('\n📋 QA vs Wikipedia:');
   console.log(`   missing (expected but absent): ${missing.length ? missing.join(', ') : 'none'}`);
-  console.log(`   unexpected (foreign/unknown):  ${unexpected.length ? unexpected.map(u => u.ref).join(', ') : 'none'}`);
-  console.log(`   uncoloured:                    ${uncolored.length ? uncolored.join(', ') : 'none'}`);
+  console.log(`   filtered (foreign, dropped):   ${filtered.length ? filtered.map(f => f.ref).join(', ') : 'none'}`);
   if (missing.length) console.log('   ↳ "missing" lines are likely construction-suspended (verify against VBB if unexpected).');
 }
 
@@ -365,7 +356,7 @@ async function main() {
     }
 
     const type = ref.startsWith('S') ? 's-bahn' : 'regional';
-    const color = LINE_COLORS[ref] || DEFAULT_COLOR;
+    const color = type === 's-bahn' ? SBAHN_COLOR : TRAIN_COLOR;
     const endpoints = longestTrip
       ? `${cleanStationName(longestTrip.first)} → ${cleanStationName(longestTrip.last)}`
       : ref;
@@ -389,8 +380,7 @@ async function main() {
       _minDist: Math.min(...stationList.map(s => haversineKm(ALEX, s))),
     });
 
-    const known = LINE_COLORS[ref] ? '' : ' (no colour — add to LINE_COLORS)';
-    console.log(`  ✓ ${ref} — ${endpoints} (${stationList.length} stations, max ${maxDist.toFixed(0)} km)${known}`);
+    console.log(`  ✓ ${ref} — ${endpoints} (${stationList.length} stations, max ${maxDist.toFixed(0)} km)`);
   }
 
   // Collapse any ref still served by network-distinct lines (cross-network
@@ -405,8 +395,21 @@ async function main() {
     byRef.set(line.ref, keep);
     console.log(`   ↺ ${line.ref}: collision — kept Berlin-closest variant, dropped "${drop.name}"`);
   }
-  const lines = [...byRef.values()];
+  let lines = [...byRef.values()];
   lines.forEach(l => { delete l._minDist; });
+
+  // Allowlist filter: drop RE/RB lines that aren't on Wikipedia's Berlin-
+  // Brandenburg list (out-of-state lines caught at border hubs, e.g. the
+  // Saxony RB31). Only applied when the Wikipedia QA actually loaded.
+  const filtered = [];
+  if (wiki) {
+    lines = lines.filter(l => {
+      const foreign = /^(RE|RB)\d+$/.test(l.ref) && !wiki.expected.has(l.ref);
+      if (foreign) filtered.push({ ref: l.ref, name: l.name, note: foreignNote(l.ref, wiki) });
+      return !foreign;
+    });
+    if (filtered.length) console.log(`   ⊘ Filtered foreign lines: ${filtered.map(f => f.ref).join(', ')}`);
+  }
 
   // Sort: S-Bahn first, then regional, then by ref (numeric-aware)
   lines.sort((a, b) => {
@@ -440,7 +443,7 @@ async function main() {
   console.log(`   Regional: ${lines.filter(l => l.type === 'regional').length}`);
   console.log(`   Stations: ${lines.reduce((n, l) => n + l.stations.length, 0)} (${Object.keys(mapping).length} unique)`);
 
-  if (wiki) writeQaReport(lines, wiki, selfHealed);
+  if (wiki) writeQaReport(lines, wiki, selfHealed, filtered);
 }
 
 main().catch(err => {

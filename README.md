@@ -51,10 +51,14 @@ frontend's existing lookup.)
 
 The build cross-checks itself against the German Wikipedia [list of Berlin-Brandenburg
 rail lines](https://de.wikipedia.org/wiki/Liste_der_Eisenbahnlinien_in_Brandenburg_und_Berlin):
-lines that list but aren't found via the VBB hubs are self-healed by harvesting their
-route's termini, and the remainder (missing / unexpected / uncoloured) is written to
-`data/qa-report.json` for review. "Missing" lines are usually construction-suspended —
-the VBB API stays the source of truth for what's actually running.
+lines that the page lists but the VBB hubs didn't surface are self-healed by harvesting
+their route's termini, and out-of-state lines caught at border hubs are filtered out.
+The leftovers (`missing` / `filtered`) are written to `data/qa-report.json` for review —
+"missing" lines are usually construction-suspended, and the VBB API stays the source of
+truth for what's actually running.
+
+Train lines are drawn in two muted overlay colors (S-Bahn green, all other trains blue)
+to stay readable once bike routes are layered on top.
 
 ## Deployment
 

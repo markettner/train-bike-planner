@@ -1,6 +1,6 @@
 {
   "expectedBerlinBrandenburg": 49,
-  "built": 60,
+  "built": 59,
   "selfHealed": [
     "RB73",
     "RB74",
@@ -12,25 +12,11 @@
     "RB34",
     "RB66"
   ],
-  "unexpected": [
+  "filtered": [
     {
       "ref": "RB31",
       "name": "RB31: Dresden, Bahnhof Neustadt → Elsterwerda-Biehla",
       "note": "listed only as out-of-state on Wikipedia"
     }
-  ],
-  "uncolored": [
-    "RB27",
-    "RB37",
-    "RB45",
-    "RB46",
-    "RB51",
-    "RB61",
-    "RB65",
-    "RB73",
-    "RB74",
-    "RB91",
-    "RB92",
-    "RB93"
   ]
 }
