@@ -5,17 +5,22 @@
     "RB73",
     "RB74",
     "RB92",
-    "RE11",
     "RE15"
   ],
   "missing": [
+    "RB10",
     "RB34",
     "RB66"
   ],
   "filtered": [
     {
       "ref": "RB31",
-      "name": "RB31: Dresden, Bahnhof Neustadt → Elsterwerda-Biehla",
+      "name": "RB31: Elsterwerda-Biehla → Dresden, Bahnhof Neustadt",
+      "note": "listed only as out-of-state on Wikipedia"
+    },
+    {
+      "ref": "RE14",
+      "name": "RE14: Falkenberg/E. → Halle (Saale), Hauptbahnhof",
       "note": "listed only as out-of-state on Wikipedia"
     }
   ]
