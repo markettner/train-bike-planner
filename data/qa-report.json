@@ -1,26 +1,27 @@
 {
   "expectedBerlinBrandenburg": 49,
-  "built": 59,
+  "built": 56,
   "selfHealed": [
+    "RB27",
+    "RB45",
     "RB73",
     "RB74",
     "RB92",
+    "RB93",
     "RE15"
   ],
   "missing": [
     "RB10",
+    "RB20",
+    "RB23",
     "RB34",
-    "RB66"
+    "RB66",
+    "RE13"
   ],
   "filtered": [
     {
       "ref": "RB31",
       "name": "RB31: Elsterwerda-Biehla → Dresden, Bahnhof Neustadt",
-      "note": "listed only as out-of-state on Wikipedia"
-    },
-    {
-      "ref": "RE14",
-      "name": "RE14: Falkenberg/E. → Halle (Saale), Hauptbahnhof",
       "note": "listed only as out-of-state on Wikipedia"
     }
   ]
