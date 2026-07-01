@@ -29,6 +29,9 @@ let calculatedResults = [];
 let isCalculating = false;
 let controls = null;
 let lastSearchedSettings = null;
+// Bumped on every search so a late-resolving transit probe from a superseded
+// search can't pop an outage notice over newer results.
+let searchSeq = 0;
 
 // --- Bootstrap ---
 
@@ -255,9 +258,22 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   controls.setCalculating(true, { done: 0, total: linesData.lines.length });
 
   try {
-    // Resolve Home coordinates to a VBB Stop ID once
-    const homeVbbId = await getHomeVbbId(homeCoords);
-    const transitConfig = { homeVbbId, date, time, timeType };
+    // Resolve Home coordinates to a VBB Stop ID, but do NOT block bike routing
+    // on it — a degraded transit API must not freeze the progress bar at 0/X.
+    // The background transit queue awaits this promise before its lookups; if it
+    // resolves to null (both APIs down), those routes simply show no train stats.
+    const homeVbbIdPromise = getHomeVbbId(homeCoords);
+    const transitConfig = { homeVbbIdPromise, date, time, timeType };
+
+    // If the transit layer can't even be reached (both VBB and DB down/timed
+    // out), surface one app-level notice rather than leaving users to infer an
+    // outage from per-route badges. Bike routes are unaffected.
+    const mySearch = ++searchSeq;
+    homeVbbIdPromise.then(id => {
+      if (!id && mySearch === searchSeq) {
+        showNotice('⚠️ Live train times are temporarily unavailable. Bike routes are unaffected.');
+      }
+    });
 
     await findRoutesForAllLines(
       linesData.lines,
@@ -352,6 +368,20 @@ function showError(message) {
   document.body.appendChild(toast);
 
   setTimeout(() => toast.remove(), 5000);
+}
+
+// A softer, informational toast (e.g. transit outage) — distinct from errors.
+function showNotice(message) {
+  const existing = document.getElementById('notice-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'notice-toast';
+  toast.className = 'notice-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 7000);
 }
 
 window.addEventListener('show-error-toast', (e) => {

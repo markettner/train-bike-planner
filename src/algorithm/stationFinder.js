@@ -132,7 +132,7 @@ export async function findRoutesForAllLines(
         }
         
         // Queue transit info fetching in the background
-        if (transitConfig && transitConfig.homeVbbId) {
+        if (transitConfig && transitConfig.homeVbbIdPromise) {
           const alreadyEnqueued = transitQueue.some(item => item.result.id === existing.id);
           if (!alreadyEnqueued && existing.trainStatsStatus === 'loading') {
             transitQueue.push({ result: existing, transitConfig, done: i + 1, total, onProgress });
@@ -145,12 +145,12 @@ export async function findRoutesForAllLines(
         }
         
         // Queue transit info fetching in the background
-        if (transitConfig && transitConfig.homeVbbId) {
+        if (transitConfig && transitConfig.homeVbbIdPromise) {
           transitQueue.push({ result, transitConfig, done: i + 1, total, onProgress });
         }
       }
-      
-      if (transitConfig && transitConfig.homeVbbId) {
+
+      if (transitConfig && transitConfig.homeVbbIdPromise) {
         processTransitQueue();
       }
     } else {
@@ -276,7 +276,7 @@ async function findRouteForStationList(line, stations, homeCoords, targetKm, tol
   const elevationGainM = extractElevationGain(bestResult.geojson);
   const timeMin = extractTime(bestResult.geojson);
 
-  const trainStatsStatus = (transitConfig && transitConfig.homeVbbId) ? 'loading' : 'failed';
+  const trainStatsStatus = (transitConfig && transitConfig.homeVbbIdPromise) ? 'loading' : 'failed';
 
   // Generate a unique ID for the result (e.g. line-station)
   const id = `${line.id}-${bestResult.station.id}`;
@@ -344,23 +344,34 @@ async function processTransitQueue() {
     const { result, transitConfig, done, total, onProgress } = transitQueue.shift();
 
     try {
-      const stationVbbId = await getStationVbbId(result.station);
-      if (stationVbbId) {
-        const trainStats = await calculateTrainRoute(
-          transitConfig.homeVbbId,
-          stationVbbId,
-          transitConfig.date,
-          transitConfig.time,
-          transitConfig.timeType
-        );
-        if (trainStats) {
-          result.trainStats = trainStats;
-          result.trainStatsStatus = 'success';
+      // Resolve the home stop ID lazily here so bike routing was never blocked
+      // on it. A null result means neither VBB nor DB could be reached at all —
+      // that's a transit-API outage, distinct from "this route has no connection".
+      const homeVbbId = await transitConfig.homeVbbIdPromise;
+      if (myGeneration !== queueGeneration) return; // superseded while awaiting
+      if (!homeVbbId) {
+        // Transit layer is unreachable — degrade honestly rather than implying
+        // this particular route lacks a connection.
+        result.trainStatsStatus = 'unavailable';
+      } else {
+        const stationVbbId = await getStationVbbId(result.station);
+        if (stationVbbId) {
+          const trainStats = await calculateTrainRoute(
+            homeVbbId,
+            stationVbbId,
+            transitConfig.date,
+            transitConfig.time,
+            transitConfig.timeType
+          );
+          if (trainStats) {
+            result.trainStats = trainStats;
+            result.trainStatsStatus = 'success';
+          } else {
+            result.trainStatsStatus = 'failed';
+          }
         } else {
           result.trainStatsStatus = 'failed';
         }
-      } else {
-        result.trainStatsStatus = 'failed';
       }
     } catch (err) {
       console.warn(`Background transit route query failed for ${result.station.name}:`, err.message);

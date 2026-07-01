@@ -70,10 +70,20 @@ export function populateTrainTimeline(result, stationName, containerEl) {
     return;
   }
 
+  if (status === 'unavailable') {
+    columnEl.innerHTML = `
+      <div class="details-unavailable-message">
+        ⚠️ Live train times are temporarily unavailable (transit API offline).<br>
+        The bike route above is unaffected — try again in a few minutes for departures.
+      </div>
+    `;
+    return;
+  }
+
   if (status === 'failed' || !trainStats || !trainStats.legs || trainStats.legs.length === 0) {
     columnEl.innerHTML = `
       <div class="details-unavailable-message">
-        ${status === 'failed' ? '⚠️ Live train connection details unavailable (APIs offline)' : 'No train connections found for this time.'}
+        No train connection found for this station at the selected time.
       </div>
     `;
     return;

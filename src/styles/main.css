@@ -1357,6 +1357,27 @@ input[type="range"]::-moz-range-track {
   animation: fadeIn 0.2s both;
 }
 
+/* Informational toast (e.g. transit outage) — amber, softer than an error */
+.notice-toast {
+  position: fixed;
+  bottom: calc(var(--sheet-bottom, 0px) + 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(241, 196, 15, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #241f00;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  max-width: min(400px, calc(100vw - 40px));
+  text-align: center;
+  animation: fadeIn 0.2s both;
+}
+
 .invisible {
   opacity: 0;
   pointer-events: none;
@@ -1610,6 +1631,14 @@ input[type="range"]::-moz-range-track {
   background: rgba(139, 146, 168, 0.08);
   color: var(--text-muted);
   border: 1px solid rgba(139, 146, 168, 0.15);
+}
+
+/* Transit API outage — visually distinct from the neutral "no connection" badge */
+.occupancy-badge.badge-offline {
+  background: rgba(241, 196, 15, 0.10);
+  color: #d4a814;
+  border: 1px solid rgba(241, 196, 15, 0.25);
+  white-space: nowrap;
 }
 
 .train-loading-spinner-container {

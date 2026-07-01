@@ -223,8 +223,10 @@ function buildCard(result) {
 
   if (status === 'loading') {
     trainInfoHtml = `<span class="train-loading">fetching...</span>`;
+  } else if (status === 'unavailable') {
+    trainInfoHtml = `<span class="occupancy-badge badge-offline" title="Live train times are temporarily unavailable (transit API offline). The bike route is unaffected.">⚠ no live data</span>`;
   } else if (status === 'failed' || !result.trainStats || result.trainStats.durationMin == null) {
-    trainInfoHtml = `<span class="occupancy-badge badge-na" title="Transit connection data is unavailable (API offline)">N/A</span>`;
+    trainInfoHtml = `<span class="occupancy-badge badge-na" title="No train connection found for this station at the selected time">no connection</span>`;
   } else {
     trainInfoHtml = `
       <span>${result.trainStats.durationMin}m</span>

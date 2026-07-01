@@ -134,6 +134,11 @@ let stationMappings = {};
 let homeVbbId = null;
 let homeVbbCoords = null;
 
+// Per-endpoint timeout for transit requests. Public HAFAS mirrors degrade by
+// hanging rather than erroring, so without this a stalled VBB request would
+// never reject and the DB fallback below would never be reached.
+const TRANSIT_TIMEOUT_MS = 8000;
+
 /**
  * Helper to fetch from VBB API with automatic Deutsche Bahn (DB) API fallback.
  */
@@ -143,7 +148,7 @@ async function fetchFromTransitAPI(endpointPath, options = {}) {
 
   try {
     // Try VBB first
-    const res = await fetch(vbbUrl, options);
+    const res = await fetchResponseWithTimeout(vbbUrl, TRANSIT_TIMEOUT_MS, options);
     if (res.ok) {
       return await res.json();
     }
@@ -154,7 +159,7 @@ async function fetchFromTransitAPI(endpointPath, options = {}) {
 
   // Fallback to DB API
   try {
-    const res = await fetch(dbUrl, options);
+    const res = await fetchResponseWithTimeout(dbUrl, TRANSIT_TIMEOUT_MS, options);
     if (!res.ok) {
       throw new Error(`DB API returned status ${res.status}`);
     }
@@ -162,6 +167,20 @@ async function fetchFromTransitAPI(endpointPath, options = {}) {
   } catch (err) {
     console.error(`Both VBB and DB API requests failed for ${endpointPath}:`, err.message);
     throw err;
+  }
+}
+
+/**
+ * fetch() with an abort-based timeout that returns the raw Response.
+ * Merges the timeout signal with any caller-supplied options (e.g. headers).
+ */
+async function fetchResponseWithTimeout(url, timeoutMs, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
   }
 }
 
