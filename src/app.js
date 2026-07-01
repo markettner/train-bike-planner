@@ -14,7 +14,7 @@ import { appendResult, clearSidebar, finalizeSidebar, selectRouteById,
          getVisibleResults, getSelectedRouteId, clearSelection } from './ui/routeList.js';
 import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFinder.js';
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
-import { setStationMappings, getHomeVbbId } from './algorithm/routeService.js';
+import { setStationMappings, getHomeVbbId, resetTransitBackend } from './algorithm/routeService.js';
 import { showRouteDetails } from './ui/routeDetailsPanel.js';
 import { initMobileSheet, isMobile, showRouteList as mobileShowRouteList, showRouteDetails as mobileShowDetails, showSettings as mobileShowSettings, startSearchMode, updateSearchProgress, collapseForLocationPick } from './ui/mobileSheet.js';
 
@@ -262,6 +262,9 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
     // on it — a degraded transit API must not freeze the progress bar at 0/X.
     // The background transit queue awaits this promise before its lookups; if it
     // resolves to null (both APIs down), those routes simply show no train stats.
+    // Re-probe backends for this search so VBB is preferred again once it has
+    // recovered (a prior search during an outage may have stuck us on DB).
+    resetTransitBackend();
     const homeVbbIdPromise = getHomeVbbId(homeCoords);
     const transitConfig = { homeVbbIdPromise, date, time, timeType };
 

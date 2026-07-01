@@ -139,35 +139,84 @@ let homeVbbCoords = null;
 // never reject and the DB fallback below would never be reached.
 const TRANSIT_TIMEOUT_MS = 8000;
 
+// Transit backends in preference order. VBB is authoritative for the whole
+// Berlin/Brandenburg region (S-Bahn, regional, U-Bahn, tram, bus). DB covers
+// S-Bahn and regional/mainline trains well (S-Bahn Berlin is DB Regio), so it's
+// a solid fallback for this app's train stations — it's just thinner on pure
+// BVG local legs (U-Bahn/tram/bus) used as connectors. Critically, DB uses a
+// DIFFERENT stop-ID namespace (EVA numbers, not VBB's 900xxxxxxx). The two are
+// NOT interchangeable, so a journey query must use IDs resolved against the
+// same backend serving it — see getStationVbbId / getHomeVbbId, which route
+// through the active backend.
+const TRANSIT_BACKENDS = [
+  { kind: 'vbb', base: 'https://v6.vbb.transport.rest' },
+  { kind: 'db',  base: 'https://v6.db.transport.rest' },
+];
+
+// The backend serving the current search, chosen on the first successful
+// transit call and reused for the rest of the search so every ID (home,
+// stations, journeys) shares one namespace.
+let activeBackend = null;
+// DB-namespace stop IDs resolved by coordinates, keyed by station.id. Kept
+// separate from stationMappings (VBB IDs) so the two namespaces never mix.
+let dbStationIdCache = {};
+
 /**
- * Helper to fetch from VBB API with automatic Deutsche Bahn (DB) API fallback.
+ * Reset backend selection and per-search caches. Called at the start of each
+ * search so VBB is re-preferred once it recovers from an outage.
+ */
+export function resetTransitBackend() {
+  activeBackend = null;
+  homeVbbId = null;
+  homeVbbCoords = null;
+  dbStationIdCache = {};
+}
+
+/**
+ * Which backend is currently serving transit requests ('vbb' | 'db' | null).
+ */
+export function getActiveBackendKind() {
+  return activeBackend ? activeBackend.kind : null;
+}
+
+/**
+ * Fetch a transit endpoint, sticking to one backend for the whole search.
+ *
+ * The first backend that answers becomes `activeBackend`; later calls go
+ * straight to it, so all resolved IDs share a namespace. If the active backend
+ * starts failing mid-search, we drop it and re-probe the preference list.
  */
 async function fetchFromTransitAPI(endpointPath, options = {}) {
-  const vbbUrl = `https://v6.vbb.transport.rest${endpointPath}`;
-  const dbUrl = `https://v6.db.transport.rest${endpointPath}`;
-
-  try {
-    // Try VBB first
-    const res = await fetchResponseWithTimeout(vbbUrl, TRANSIT_TIMEOUT_MS, options);
-    if (res.ok) {
-      return await res.json();
+  // Fast path: reuse the backend already answering this search.
+  if (activeBackend) {
+    try {
+      const res = await fetchResponseWithTimeout(activeBackend.base + endpointPath, TRANSIT_TIMEOUT_MS, options);
+      if (res.ok) return await res.json();
+      console.warn(`${activeBackend.kind.toUpperCase()} returned ${res.status} for ${endpointPath}; re-probing backends...`);
+    } catch (err) {
+      console.warn(`${activeBackend.kind.toUpperCase()} request failed for ${endpointPath} (${err.message}); re-probing backends...`);
     }
-    console.warn(`VBB API returned status ${res.status} for ${endpointPath}. Trying DB API fallback...`);
-  } catch (err) {
-    console.warn(`VBB API request failed for ${endpointPath} (${err.message}). Trying DB API fallback...`);
+    activeBackend = null;
   }
 
-  // Fallback to DB API
-  try {
-    const res = await fetchResponseWithTimeout(dbUrl, TRANSIT_TIMEOUT_MS, options);
-    if (!res.ok) {
-      throw new Error(`DB API returned status ${res.status}`);
+  // Probe backends in preference order; stick to the first that answers.
+  let lastErr = null;
+  for (const backend of TRANSIT_BACKENDS) {
+    try {
+      const res = await fetchResponseWithTimeout(backend.base + endpointPath, TRANSIT_TIMEOUT_MS, options);
+      if (res.ok) {
+        activeBackend = backend;
+        return await res.json();
+      }
+      lastErr = new Error(`${backend.kind} returned status ${res.status}`);
+      console.warn(`${backend.kind.toUpperCase()} API returned status ${res.status} for ${endpointPath}.`);
+    } catch (err) {
+      lastErr = err;
+      console.warn(`${backend.kind.toUpperCase()} API request failed for ${endpointPath} (${err.message}).`);
     }
-    return await res.json();
-  } catch (err) {
-    console.error(`Both VBB and DB API requests failed for ${endpointPath}:`, err.message);
-    throw err;
   }
+  console.error(`All transit backends failed for ${endpointPath}:`, lastErr?.message);
+  throw lastErr || new Error('All transit backends failed');
 }
 
 /**
@@ -192,30 +241,47 @@ export function setStationMappings(mappings) {
 }
 
 /**
- * Resolve a candidate station to its VBB Stop ID.
- * Looks up in the pre-computed mappings first, falling back to a live nearby query.
+ * Resolve a candidate station to a stop ID in the ACTIVE backend's namespace.
+ *
+ * When VBB is serving, the pre-computed identity mappings (VBB IDs) are valid.
+ * When we've fallen back to DB, those VBB IDs don't resolve, so we look the stop
+ * up by coordinates against DB and cache it separately. This is what makes the
+ * DB fallback actually return journeys instead of empty results.
  */
 export async function getStationVbbId(station) {
-  if (station && stationMappings[station.id]) {
+  if (!station) return null;
+
+  // VBB backend (or not yet resolved): the pre-computed VBB IDs are valid.
+  if ((!activeBackend || activeBackend.kind === 'vbb') && stationMappings[station.id]) {
     return stationMappings[station.id];
   }
-  if (!station) return null;
-  // Fallback: resolve live
+  // DB backend: reuse a previously resolved DB ID if we have one.
+  if (activeBackend && activeBackend.kind === 'db' && dbStationIdCache[station.id]) {
+    return dbStationIdCache[station.id];
+  }
+
+  // Resolve live by coordinates against whichever backend is active.
   try {
     const data = await fetchFromTransitAPI(`/locations/nearby?latitude=${station.lat}&longitude=${station.lon}&results=1`);
     if (data && data[0] && data[0].id) {
-      const vbbId = data[0].id;
-      stationMappings[station.id] = vbbId; // cache in memory
-      return vbbId;
+      const id = data[0].id;
+      if (activeBackend && activeBackend.kind === 'db') {
+        dbStationIdCache[station.id] = id; // DB namespace
+      } else {
+        stationMappings[station.id] = id; // VBB namespace
+      }
+      return id;
     }
   } catch (err) {
-    console.warn(`Failed to resolve station VBB/DB ID live for ${station.name}:`, err.message);
+    console.warn(`Failed to resolve station transit ID for ${station.name}:`, err.message);
   }
   return null;
 }
 
 /**
- * Resolve Home coordinates to a VBB Stop ID, caching the result.
+ * Resolve Home coordinates to a stop ID, caching the result. As the first
+ * transit call of a search this also establishes the active backend (VBB or
+ * DB), so the returned ID and all later station IDs share one namespace.
  */
 export async function getHomeVbbId(coords) {
   if (homeVbbId && homeVbbCoords && homeVbbCoords.lat === coords.lat && homeVbbCoords.lon === coords.lon) {
