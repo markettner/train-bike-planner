@@ -1,6 +1,6 @@
 {
   "expectedBerlinBrandenburg": 49,
-  "built": 59,
+  "built": 58,
   "selfHealed": [
     "RB45",
     "RB73",
@@ -11,6 +11,7 @@
   "missing": [
     "RB10",
     "RB34",
+    "RB55",
     "RB66"
   ],
   "filtered": [
