@@ -8,11 +8,11 @@ import './styles/main.css';
 
 import { initMap, setHomeMarker, setDistanceCircle, drawTrainLines,
          addBikeRoute, clearRoutes, fitToRoutes, setHomePickerMode,
-         getRouteColor, updateBikeRoutePopup } from './ui/mapRenderer.js';
+         updateBikeRoutePopup } from './ui/mapRenderer.js';
 import { initControls } from './ui/controls.js';
 import { appendResult, clearSidebar, finalizeSidebar, selectRouteById,
          getVisibleResults, getSelectedRouteId, clearSelection } from './ui/routeList.js';
-import { findRoutesForAllLines, clearTransitQueue } from './algorithm/stationFinder.js';
+import { findRoutesForAllLines, clearTransitQueue, INITIAL_DETOUR_FACTOR } from './algorithm/stationFinder.js';
 import { exportAllRoutesAsGPX } from './algorithm/gpxExport.js';
 import { setStationMappings, getHomeVbbId, resetTransitBackend } from './algorithm/routeService.js';
 import { showRouteDetails } from './ui/routeDetailsPanel.js';
@@ -195,6 +195,7 @@ async function handleHomeChange(coords) {
 async function loadLinesData() {
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}data/lines.json`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     linesData = await res.json();
     // Draw train lines on map immediately
     if (linesData?.lines) {
@@ -253,9 +254,13 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   clearTransitQueue();
 
   // Show the distance circle
-  setDistanceCircle(homeCoords, distance / 1.3); // rough crow-flies radius
+  setDistanceCircle(homeCoords, distance / INITIAL_DETOUR_FACTOR); // rough crow-flies radius
 
-  controls.setCalculating(true, { done: 0, total: linesData.lines.length });
+  // Show a countless "Calculating…" until the first progress callback arrives:
+  // the real total is the branch count (lines split into geographic branches),
+  // not the line count, so seeding it with lines.length would flash a wrong
+  // total that immediately jumps (e.g. 0/56 → 1/74).
+  controls.setCalculating(true);
 
   try {
     // Resolve Home coordinates to a VBB Stop ID, but do NOT block bike routing
@@ -302,7 +307,10 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
             appendResult(result);
             const foundIdx = calculatedResults.findIndex(r => r.id === result.id);
             if (foundIdx !== -1) {
-              calculatedResults[foundIdx] = result;
+              // Drop the transient update markers before storing so the canonical
+              // result objects don't carry isMergeUpdate/isTrainUpdate around.
+              const { isMergeUpdate, isTrainUpdate, newLine, ...clean } = result;
+              calculatedResults[foundIdx] = clean;
             }
 
             // If this route is currently selected, refresh the open details panel
@@ -310,13 +318,10 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
               showRouteDetails(result);
             }
           } else {
-            // Assign color
-            const color = getRouteColor(colorIndex);
-            result.lines[0].color = color;
+            // Add to map immediately (progressive). addBikeRoute assigns the
+            // route color and writes it onto result.lines[0].color.
+            addBikeRoute(result, colorIndex);
             colorIndex++;
-
-            // Add to map immediately (progressive)
-            addBikeRoute(result, colorIndex - 1);
 
             // Add to sidebar immediately (progressive)
             appendResult(result);
@@ -367,6 +372,7 @@ function showError(message) {
   const toast = document.createElement('div');
   toast.id = 'error-toast';
   toast.className = 'error-toast';
+  toast.setAttribute('role', 'alert');
   toast.textContent = message;
   document.body.appendChild(toast);
 
@@ -381,6 +387,7 @@ function showNotice(message) {
   const toast = document.createElement('div');
   toast.id = 'notice-toast';
   toast.className = 'notice-toast';
+  toast.setAttribute('role', 'status');
   toast.textContent = message;
   document.body.appendChild(toast);
 

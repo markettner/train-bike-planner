@@ -133,6 +133,9 @@ function sleep(ms) {
 let stationMappings = {};
 let homeVbbId = null;
 let homeVbbCoords = null;
+// The backend kind homeVbbId was resolved against, so we can detect when a
+// mid-search failover has left it in the wrong namespace and re-resolve it.
+let homeVbbBackend = null;
 
 // Per-endpoint timeout for transit requests. Public HAFAS mirrors degrade by
 // hanging rather than erroring, so without this a stalled VBB request would
@@ -169,6 +172,7 @@ export function resetTransitBackend() {
   activeBackend = null;
   homeVbbId = null;
   homeVbbCoords = null;
+  homeVbbBackend = null;
   dbStationIdCache = {};
 }
 
@@ -292,12 +296,42 @@ export async function getHomeVbbId(coords) {
     if (data && data[0] && data[0].id) {
       homeVbbId = data[0].id;
       homeVbbCoords = { lat: coords.lat, lon: coords.lon };
+      homeVbbBackend = activeBackend ? activeBackend.kind : null;
       return homeVbbId;
     }
   } catch (err) {
     console.error('Failed to resolve Home VBB/DB ID:', err);
   }
   return null;
+}
+
+/**
+ * Return the Home stop ID in the ACTIVE backend's namespace.
+ *
+ * getHomeVbbId resolves the Home ID once at search start, establishing the
+ * active backend. But a later station lookup can fail that backend over to
+ * another one with a different stop-ID namespace. If that happens, the cached
+ * Home ID no longer matches, and pairing it with a freshly-resolved station ID
+ * in one /journeys query would silently return nothing. Re-resolve Home against
+ * whatever backend is now active so both IDs always share one namespace.
+ */
+export async function getHomeStopIdForActiveBackend() {
+  const activeKind = activeBackend ? activeBackend.kind : null;
+  if (!homeVbbCoords || (homeVbbId && homeVbbBackend === activeKind)) {
+    return homeVbbId;
+  }
+  try {
+    const data = await fetchFromTransitAPI(
+      `/locations/nearby?latitude=${homeVbbCoords.lat}&longitude=${homeVbbCoords.lon}&results=1`
+    );
+    if (data && data[0] && data[0].id) {
+      homeVbbId = data[0].id;
+      homeVbbBackend = activeBackend ? activeBackend.kind : null;
+    }
+  } catch (err) {
+    console.warn('Failed to re-resolve Home ID for active backend:', err.message);
+  }
+  return homeVbbId;
 }
 
 /**

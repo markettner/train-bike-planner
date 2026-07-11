@@ -105,6 +105,23 @@ function haversineKm(a, b) {
 
 const normRef = name => (name || '').replace(/\s+/g, '');
 
+// The two most geographically distant stations in a set — a line's termini,
+// independent of which trips were sampled. Returns them in a stable order (by
+// stop id) so the display-name arrow direction never flips between runs.
+function furthestStationPair(stationList) {
+  if (stationList.length === 0) return [null, null];
+  let a = stationList[0];
+  let b = stationList[0];
+  let best = -1;
+  for (let i = 0; i < stationList.length; i++) {
+    for (let j = i + 1; j < stationList.length; j++) {
+      const d = haversineKm(stationList[i], stationList[j]);
+      if (d > best) { best = d; a = stationList[i]; b = stationList[j]; }
+    }
+  }
+  return a.id <= b.id ? [a, b] : [b, a];
+}
+
 // VBB station names are verbose ("S+U Berlin Hauptbahnhof [Gleis 1-8]",
 // "S Spandau Bhf (Berlin)"). Trim the transit-product noise for display.
 function cleanStationName(name) {
@@ -302,7 +319,6 @@ async function main() {
     const tripIds = pickTrips(byDir);
     const stations = new Map();          // vbb id → station
     const geomByDirection = new Map();   // direction → longest [ [lon,lat], ... ]
-    let longestTrip = null;              // for the display name
 
     for (const tripId of tripIds) {
       let trip;
@@ -329,10 +345,6 @@ async function main() {
         }
       }
 
-      if (!longestTrip || stopovers.length > longestTrip.count) {
-        longestTrip = { count: stopovers.length, first: stopovers[0].stop.name, last: stopovers[stopovers.length - 1].stop.name };
-      }
-
       const coords = (trip.polyline?.features || [])
         .map(f => f.geometry?.coordinates)
         .filter(c => Array.isArray(c) && c.length === 2);
@@ -357,9 +369,13 @@ async function main() {
 
     const type = ref.startsWith('S') ? 's-bahn' : 'regional';
     const color = type === 's-bahn' ? SBAHN_COLOR : TRAIN_COLOR;
-    const endpoints = longestTrip
-      ? `${cleanStationName(longestTrip.first)} → ${cleanStationName(longestTrip.last)}`
-      : ref;
+    // Display endpoints = the two geographically most distant stations in the
+    // unioned set. Deriving them from the station union (not whichever single
+    // trip happened to be longest that harvest) keeps the name deterministic;
+    // picking the longest trip flip-flopped names when a different short-turn
+    // was sampled (e.g. "S1: Oranienburg → Wannsee" vs "→ Potsdam Hauptbahnhof").
+    const [endA, endB] = furthestStationPair([...stations.values()]);
+    const endpoints = endA ? `${endA.name} → ${endB.name}` : ref;
 
     // Stable ordering so the daily job doesn't churn lines.json just because a
     // different (equivalent) set of trips was caught: sort stations by ID and
@@ -433,7 +449,13 @@ async function main() {
   const sortedMapping = {};
   for (const k of Object.keys(mapping).sort()) sortedMapping[k] = mapping[k];
 
-  const output = { generated: new Date().toISOString(), center: ALEX, lines };
+  // No `generated` timestamp in the committed output: it changed every run and
+  // made the daily job's `git diff --quiet` always dirty, forcing a commit + a
+  // full Pages redeploy even when the actual line/station data was identical.
+  // Git commit history is the source of truth for data freshness. (qa-report.json
+  // was already fixed this way — "no timestamp, so it only changes when findings
+  // change".)
+  const output = { center: ALEX, lines };
 
   fs.writeFileSync(path.join(__dirname, 'lines.json'), JSON.stringify(output));
   fs.writeFileSync(path.join(__dirname, 'station_mappings.json'), JSON.stringify(sortedMapping));

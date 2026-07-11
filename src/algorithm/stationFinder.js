@@ -17,12 +17,13 @@ import {
   extractElevationGain,
   extractTime,
   getStationVbbId,
+  getHomeStopIdForActiveBackend,
   calculateTrainRoute
 } from './routeService.js';
 import { haversineKm, toRad } from '../utils.js';
 
 // Initial detour factor estimate: bike routes are ~1.3x the crow-flies distance
-const INITIAL_DETOUR_FACTOR = 1.3;
+export const INITIAL_DETOUR_FACTOR = 1.3;
 
 /**
  * Splits a line's stations into geographical branches based on their bearings from home.
@@ -122,7 +123,9 @@ export async function findRoutesForAllLines(
     }
 
     if (result) {
-      const existing = results.find(r => r.station.name === result.station.name);
+      // Merge lines that reach the same physical station. Match on stop id, not
+      // display name — cleaned VBB names can collide across distinct stops.
+      const existing = results.find(r => r.station.id === result.station.id);
       if (existing) {
         if (!existing.lines.some(l => l.id === result.lines[0].id)) {
           existing.lines.push(result.lines[0]);
@@ -356,8 +359,14 @@ async function processTransitQueue() {
       } else {
         const stationVbbId = await getStationVbbId(result.station);
         if (stationVbbId) {
+          // Resolving the station ID may have failed the active backend over to
+          // one with a different stop-ID namespace. Re-fetch the Home ID against
+          // whatever backend is now active so both IDs in the journey query share
+          // one namespace (a VBB home + DB station would silently return nothing).
+          const homeStopId = await getHomeStopIdForActiveBackend();
+          if (myGeneration !== queueGeneration) return; // superseded while awaiting
           const trainStats = await calculateTrainRoute(
-            homeVbbId,
+            homeStopId || homeVbbId,
             stationVbbId,
             transitConfig.date,
             transitConfig.time,

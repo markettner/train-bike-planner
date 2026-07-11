@@ -1,7 +1,7 @@
 /**
  * Shared geometry post-processing for lines.json.
  *
- * The raw Overpass geometry is far more detailed than the map overlay needs
+ * The raw VBB trip polylines are far more detailed than the map overlay needs
  * (the train lines render at weight 2.5 / low opacity, max zoom ~13):
  *  - coordinates come with 7 decimals (~1 cm) → round to 5 (~1 m)
  *  - track segments contain a point every few meters → Douglas-Peucker

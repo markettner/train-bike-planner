@@ -1,11 +1,20 @@
 name: Update Station Data
 
 on:
-  # Run daily at 03:00 UTC (05:00 Berlin summer time, 04:00 winter)
-  schedule:
-    - cron: '0 3 * * *'
+  # Daily schedule PAUSED (2026-07): data/fetch-stations.js sources line/station
+  # data from the VBB HAFAS REST API (v6.vbb.transport.rest), which is being
+  # sunset and now fails or 502s intermittently. Since ~2026-06-27 the scheduled
+  # runs have been failing every night (red runs, no data commits). The frozen
+  # data/lines.json is still perfectly usable, so the nightly job is paused to
+  # stop the noise until the pipeline is migrated to a stable source (VBB static
+  # GTFS, or Transitous/MOTIS — see the transit backend notes in routeService.js).
+  # Re-enable by uncommenting the schedule below once that migration lands.
+  #
+  # schedule:
+  #   - cron: '0 3 * * *'   # 03:00 UTC (05:00 Berlin summer, 04:00 winter)
 
-  # Allow manual trigger from the GitHub Actions tab
+  # Manual trigger stays available from the GitHub Actions tab (e.g. to test a
+  # migrated fetch script, or force a refresh if VBB is temporarily healthy).
   workflow_dispatch:
 
 permissions:

@@ -215,6 +215,9 @@ function buildCard(result) {
 
   card.dataset.routeId = result.id;
   card.style.setProperty('--route-color', isLocked ? '#e74c3c' : color);
+  // Keep hidden routes dimmed across re-renders (sort, train-stat updates, and
+  // in-place card replacement all rebuild the card from scratch).
+  if (!isVisible) card.style.opacity = '0.45';
 
   const lineIds = result.lines.map(l => l.id).join(' / ');
 
@@ -349,6 +352,8 @@ export function selectRouteById(routeId) {
   // Make sure sidebar is visible
   sidebar.classList.remove('hidden');
   toggleBtn.classList.add('hidden');
+  // Mirror the toggle-button path so map controls/attribution shift over.
+  if (!isMobile()) document.body.classList.add('sidebar-open');
 
   selectRouteCard(card, result);
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

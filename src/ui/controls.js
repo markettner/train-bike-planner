@@ -74,6 +74,13 @@ export function initControls(options = {}) {
     onSettingsChange?.();
   });
 
+  // The slider tracks the clamped value while typing, but the input keeps
+  // whatever raw digits were entered (e.g. "300"). Write the clamped value back
+  // once the field is committed so what's shown matches what the search uses.
+  distanceInput?.addEventListener('change', () => {
+    distanceInput.value = clamp(Number(distanceInput.value), 20, 200);
+  });
+
   toleranceSlider?.addEventListener('input', () => {
     toleranceInput.value = toleranceSlider.value;
     updateSliderFill(toleranceSlider);
@@ -87,6 +94,10 @@ export function initControls(options = {}) {
     updateSliderFill(toleranceSlider);
     onToleranceChange?.(v);
     onSettingsChange?.();
+  });
+
+  toleranceInput?.addEventListener('change', () => {
+    toleranceInput.value = clamp(Number(toleranceInput.value), 2, 30);
   });
 
   // Initialize slider fills
