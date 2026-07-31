@@ -39,6 +39,16 @@ const MOCK_JOURNEY = JSON.parse(
   readFileSync('./scratch/journey_test.json', 'utf8')
 );
 
+// Transitous/MOTIS fallback fixtures — real captured responses, so they exercise
+// the quirks the normalizer handles: UTC timestamps, "RE1 (73766)" trip numbers,
+// bare-hex route colors, and absent load factors.
+const MOCK_MOTIS_PLAN = JSON.parse(
+  readFileSync('./scratch/motis_journey_test.json', 'utf8')
+);
+const MOCK_MOTIS_GEOCODE = JSON.parse(
+  readFileSync('./scratch/motis_reverse_geocode_test.json', 'utf8')
+);
+
 async function shot(page, name) {
   const path = join(OUT, `${name}.png`);
   await page.screenshot({ path, fullPage: false });
@@ -347,7 +357,13 @@ async function shot(page, name) {
 
 // ── Shared network intercept helper ──────────────────────────────────────────
 const MOCK_JOURNEY_DATA = MOCK_JOURNEY; // alias so the helper can access it
-async function applyNetworkIntercepts(page, trackLengthM = '52000') {
+
+/**
+ * @param {string} trackLengthM  BRouter track length to report
+ * @param {boolean} failHafas    503 both HAFAS mirrors so the ladder falls
+ *                               through to the Transitous/MOTIS intercepts
+ */
+async function applyNetworkIntercepts(page, trackLengthM = '52000', failHafas = false) {
   await page.route('**/reverse?*', route => route.fulfill({
     status: 200, contentType: 'application/json',
     headers: { 'Access-Control-Allow-Origin': '*' },
@@ -399,4 +415,29 @@ async function applyNetworkIntercepts(page, trackLengthM = '52000') {
       }],
     }),
   }));
+
+  // Transitous/MOTIS backup backend. The globs above are host-agnostic, so these
+  // sit alongside them rather than replacing them.
+  await page.route('**/api/v1/reverse-geocode?*', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    body: JSON.stringify(MOCK_MOTIS_GEOCODE),
+  }));
+  await page.route('**/api/v1/plan?*', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    body: JSON.stringify(MOCK_MOTIS_PLAN),
+  }));
+
+  // Registered last so it wins over the generic globs (Playwright matches the
+  // most recently added route first).
+  if (failHafas) {
+    for (const host of ['v6.vbb.transport.rest', 'v6.bvg.transport.rest']) {
+      await page.route(`**://${host}/**`, route => route.fulfill({
+        status: 503, contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: '{"error":"simulated outage"}',
+      }));
+    }
+  }
 }

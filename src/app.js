@@ -263,19 +263,20 @@ async function handleCalculate({ distance, tolerance, profile, date, time, timeT
   controls.setCalculating(true);
 
   try {
-    // Resolve Home coordinates to a VBB Stop ID, but do NOT block bike routing
-    // on it — a degraded transit API must not freeze the progress bar at 0/X.
-    // The background transit queue awaits this promise before its lookups; if it
-    // resolves to null (both APIs down), those routes simply show no train stats.
-    // Re-probe backends for this search so VBB is preferred again once it has
-    // recovered (a prior search during an outage may have stuck us on DB).
+    // Resolve Home coordinates to a transit stop ID, but do NOT block bike
+    // routing on it — a degraded transit API must not freeze the progress bar at
+    // 0/X. The background transit queue awaits this promise before its lookups;
+    // if it resolves to null (every backend down), those routes simply show no
+    // train stats. Re-probe backends for this search so VBB is preferred again
+    // once it has recovered (a prior search during an outage may have stuck us
+    // on BVG or Transitous).
     resetTransitBackend();
     const homeVbbIdPromise = getHomeVbbId(homeCoords);
     const transitConfig = { homeVbbIdPromise, date, time, timeType };
 
-    // If the transit layer can't even be reached (both VBB and DB down/timed
-    // out), surface one app-level notice rather than leaving users to infer an
-    // outage from per-route badges. Bike routes are unaffected.
+    // If the transit layer can't be reached at all (VBB, BVG and Transitous all
+    // down or timed out), surface one app-level notice rather than leaving users
+    // to infer an outage from per-route badges. Bike routes are unaffected.
     const mySearch = ++searchSeq;
     homeVbbIdPromise.then(id => {
       if (!id && mySearch === searchSeq) {

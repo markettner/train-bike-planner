@@ -1744,6 +1744,15 @@ input[type="range"]::-moz-range-track {
 .details-occupancy-label.occupancy-med  { color: var(--accent); }
 .details-occupancy-label.occupancy-high { color: var(--danger); }
 
+/* Stands in for the occupancy label when the backup transit provider served this
+   journey and carries no occupancy data. Matches .badge-offline's amber. */
+.details-reduced-label {
+  font-weight: 600;
+  color: #d4a814;
+  white-space: nowrap;
+  cursor: help;
+}
+
 .details-legs-list {
   display: flex;
   flex-direction: column;
@@ -1804,6 +1813,16 @@ input[type="range"]::-moz-range-track {
   font-weight: 800;
   font-size: 9px;
   text-transform: uppercase;
+}
+
+/* Leg that won't take the bike — the constraint that can invalidate the trip */
+.leg-nobike-label {
+  color: var(--danger);
+  font-weight: 800;
+  font-size: 9px;
+  text-transform: uppercase;
+  cursor: help;
+  white-space: nowrap;
 }
 
 .leg-duration {

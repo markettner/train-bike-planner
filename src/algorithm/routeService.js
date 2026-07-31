@@ -133,36 +133,58 @@ function sleep(ms) {
 let stationMappings = {};
 let homeVbbId = null;
 let homeVbbCoords = null;
-// The backend kind homeVbbId was resolved against, so we can detect when a
+// The stop-ID namespace homeVbbId was resolved in, so we can detect when a
 // mid-search failover has left it in the wrong namespace and re-resolve it.
 let homeVbbBackend = null;
 
 // Per-endpoint timeout for transit requests. Public HAFAS mirrors degrade by
 // hanging rather than erroring, so without this a stalled VBB request would
-// never reject and the DB fallback below would never be reached.
+// never reject and the fallbacks below would never be reached.
 const TRANSIT_TIMEOUT_MS = 8000;
 
-// Transit backends in preference order. VBB is authoritative for the whole
-// Berlin/Brandenburg region (S-Bahn, regional, U-Bahn, tram, bus). DB covers
-// S-Bahn and regional/mainline trains well (S-Bahn Berlin is DB Regio), so it's
-// a solid fallback for this app's train stations — it's just thinner on pure
-// BVG local legs (U-Bahn/tram/bus) used as connectors. Critically, DB uses a
-// DIFFERENT stop-ID namespace (EVA numbers, not VBB's 900xxxxxxx). The two are
-// NOT interchangeable, so a journey query must use IDs resolved against the
-// same backend serving it — see getStationVbbId / getHomeVbbId, which route
-// through the active backend.
+// Transit backends in preference order.
+//
+// VBB is authoritative for the whole Berlin/Brandenburg region (S-Bahn,
+// regional, U-Bahn, tram, bus). BVG is a second HAFAS mirror that speaks the
+// byte-identical wire format AND shares VBB's 900xxxxxxx stop-ID namespace, so
+// it costs nothing to add and station_mappings.json stays valid against it —
+// but it's the same mirror ecosystem, so it covers blips, not a HAFAS sunset.
+// Transitous (MOTIS) is the independent last resort: a different operator, a
+// different data source (GTFS), and a different wire format, hence the
+// normalizer below.
+//
+// The previous DB rung was removed: the upstream DB HAFAS endpoint shut down
+// permanently, and v6.db.transport.rest now hangs for ~10s before returning
+// 503 — it burnt the whole TRANSIT_TIMEOUT_MS on every failover and never
+// served a journey.
+//
+// Critically, each backend has its OWN stop-ID namespace (VBB/BVG: 900xxxxxxx;
+// Transitous: feed-prefixed IFOPT like de-VBB_de:11000:900100537). They are NOT
+// interchangeable, so a journey query must use IDs resolved against the same
+// backend serving it — see getStationVbbId / getHomeVbbId, which route through
+// the active backend.
 const TRANSIT_BACKENDS = [
-  { kind: 'vbb', base: 'https://v6.vbb.transport.rest' },
-  { kind: 'db',  base: 'https://v6.db.transport.rest' },
+  { kind: 'vbb',        format: 'hafas', base: 'https://v6.vbb.transport.rest' },
+  { kind: 'bvg',        format: 'hafas', base: 'https://v6.bvg.transport.rest' },
+  { kind: 'transitous', format: 'motis', base: 'https://api.transitous.org' },
 ];
 
 // The backend serving the current search, chosen on the first successful
 // transit call and reused for the rest of the search so every ID (home,
 // stations, journeys) shares one namespace.
 let activeBackend = null;
-// DB-namespace stop IDs resolved by coordinates, keyed by station.id. Kept
-// separate from stationMappings (VBB IDs) so the two namespaces never mix.
-let dbStationIdCache = {};
+// Stop IDs resolved by coordinates, keyed by namespace then station.id. Kept
+// per-namespace so IDs never mix. HAFAS backends instead read through the
+// pre-computed stationMappings, which are already 900xxxxxxx IDs.
+let stopIdCacheByNamespace = {};
+// Set once any request in this search has failed, which drops activeBackend
+// back to null. Without this flag a null activeBackend is ambiguous: at search
+// start it means "VBB not tried yet, the pre-computed 900xxxxxxx mappings are
+// the right guess", but after a failure it means "the next backend to answer
+// may be Transitous, whose IDs look nothing like those". Guessing HAFAS in the
+// second case hands 900xxxxxxx IDs to MOTIS, which 404s — so every station
+// would report "no connection" while the fallback was actually healthy.
+let backendInvalidated = false;
 
 /**
  * Reset backend selection and per-search caches. Called at the start of each
@@ -173,11 +195,13 @@ export function resetTransitBackend() {
   homeVbbId = null;
   homeVbbCoords = null;
   homeVbbBackend = null;
-  dbStationIdCache = {};
+  stopIdCacheByNamespace = {};
+  backendInvalidated = false;
 }
 
 /**
- * Which backend is currently serving transit requests ('vbb' | 'db' | null).
+ * Which backend is currently serving transit requests
+ * ('vbb' | 'bvg' | 'transitous' | null).
  */
 export function getActiveBackendKind() {
   return activeBackend ? activeBackend.kind : null;
@@ -189,37 +213,50 @@ export function getActiveBackendKind() {
  * The first backend that answers becomes `activeBackend`; later calls go
  * straight to it, so all resolved IDs share a namespace. If the active backend
  * starts failing mid-search, we drop it and re-probe the preference list.
+ *
+ * Backends no longer share an endpoint layout (HAFAS `/journeys` vs MOTIS
+ * `/api/v1/plan`), so callers pass a `buildPath(backend)` function rather than a
+ * fixed path, and get back the backend that answered so they know which
+ * response format to normalize.
+ *
+ * @param {(backend: object) => string} buildPath
+ * @param {object} [options]  fetch options (e.g. headers)
+ * @param {string} [label]    short name for logging
+ * @returns {Promise<{backend: object, data: any}>}
  */
-async function fetchFromTransitAPI(endpointPath, options = {}) {
+async function fetchFromTransitAPI(buildPath, options = {}, label = 'request') {
   // Fast path: reuse the backend already answering this search.
   if (activeBackend) {
+    const backend = activeBackend;
     try {
-      const res = await fetchResponseWithTimeout(activeBackend.base + endpointPath, TRANSIT_TIMEOUT_MS, options);
-      if (res.ok) return await res.json();
-      console.warn(`${activeBackend.kind.toUpperCase()} returned ${res.status} for ${endpointPath}; re-probing backends...`);
+      const res = await fetchResponseWithTimeout(backend.base + buildPath(backend), TRANSIT_TIMEOUT_MS, options);
+      if (res.ok) return { backend, data: await res.json() };
+      console.warn(`${backend.kind.toUpperCase()} returned ${res.status} for ${label}; re-probing backends...`);
     } catch (err) {
-      console.warn(`${activeBackend.kind.toUpperCase()} request failed for ${endpointPath} (${err.message}); re-probing backends...`);
+      console.warn(`${backend.kind.toUpperCase()} request failed for ${label} (${err.message}); re-probing backends...`);
     }
     activeBackend = null;
+    backendInvalidated = true;
   }
 
   // Probe backends in preference order; stick to the first that answers.
   let lastErr = null;
   for (const backend of TRANSIT_BACKENDS) {
     try {
-      const res = await fetchResponseWithTimeout(backend.base + endpointPath, TRANSIT_TIMEOUT_MS, options);
+      const res = await fetchResponseWithTimeout(backend.base + buildPath(backend), TRANSIT_TIMEOUT_MS, options);
       if (res.ok) {
         activeBackend = backend;
-        return await res.json();
+        return { backend, data: await res.json() };
       }
       lastErr = new Error(`${backend.kind} returned status ${res.status}`);
-      console.warn(`${backend.kind.toUpperCase()} API returned status ${res.status} for ${endpointPath}.`);
+      console.warn(`${backend.kind.toUpperCase()} API returned status ${res.status} for ${label}.`);
     } catch (err) {
       lastErr = err;
-      console.warn(`${backend.kind.toUpperCase()} API request failed for ${endpointPath} (${err.message}).`);
+      console.warn(`${backend.kind.toUpperCase()} API request failed for ${label} (${err.message}).`);
     }
   }
-  console.error(`All transit backends failed for ${endpointPath}:`, lastErr?.message);
+  backendInvalidated = true;
+  console.error(`All transit backends failed for ${label}:`, lastErr?.message);
   throw lastErr || new Error('All transit backends failed');
 }
 
@@ -245,36 +282,76 @@ export function setStationMappings(mappings) {
 }
 
 /**
+ * Look a stop up by coordinates against whichever backend answers.
+ *
+ * Both formats expose a coordinate→stop lookup that returns an array of
+ * candidates with an `id`, they just live at different paths. This is also the
+ * liveness probe that establishes `activeBackend` for the search, so it must
+ * stay a real network call for every format.
+ *
+ * @returns {Promise<{backend: object, id: string}|null>}
+ */
+async function resolveStopByCoords(lat, lon, label) {
+  const { backend, data } = await fetchFromTransitAPI(
+    b => (b.format === 'motis'
+      ? `/api/v1/reverse-geocode?place=${lat},${lon}&type=STOP`
+      : `/locations/nearby?latitude=${lat}&longitude=${lon}&results=1`),
+    {},
+    label
+  );
+  const id = Array.isArray(data) ? data[0]?.id : null;
+  return id ? { backend, id } : null;
+}
+
+/**
+ * The namespace station IDs may be read from a cache for, or null when it can't
+ * be assumed and must be established by a live lookup.
+ *
+ * A live activeBackend answers this directly. With no active backend the answer
+ * depends on why: before the first request VBB leads the preference list, so the
+ * pre-computed 900xxxxxxx mappings are the right assumption and cost no network
+ * call. After a failure any backend may answer next, and assuming HAFAS there
+ * would feed 900xxxxxxx IDs to MOTIS, which 404s on them.
+ */
+function assumableNamespace() {
+  if (activeBackend) return namespaceOf(activeBackend);
+  return backendInvalidated ? null : 'hafas';
+}
+
+/**
  * Resolve a candidate station to a stop ID in the ACTIVE backend's namespace.
  *
- * When VBB is serving, the pre-computed identity mappings (VBB IDs) are valid.
- * When we've fallen back to DB, those VBB IDs don't resolve, so we look the stop
- * up by coordinates against DB and cache it separately. This is what makes the
- * DB fallback actually return journeys instead of empty results.
+ * When a HAFAS backend is serving (VBB or BVG — they share the 900xxxxxxx
+ * namespace), the pre-computed mappings are valid. On any other backend those
+ * IDs don't resolve, so we look the stop up by coordinates and cache it under
+ * that namespace. This is what makes a fallback actually return journeys
+ * instead of silently empty results.
  */
 export async function getStationVbbId(station) {
   if (!station) return null;
 
-  // VBB backend (or not yet resolved): the pre-computed VBB IDs are valid.
-  if ((!activeBackend || activeBackend.kind === 'vbb') && stationMappings[station.id]) {
+  const namespace = assumableNamespace();
+  // HAFAS namespace: the pre-computed VBB IDs are valid, no request needed.
+  if (namespace === 'hafas' && stationMappings[station.id]) {
     return stationMappings[station.id];
   }
-  // DB backend: reuse a previously resolved DB ID if we have one.
-  if (activeBackend && activeBackend.kind === 'db' && dbStationIdCache[station.id]) {
-    return dbStationIdCache[station.id];
+  // Otherwise: reuse an ID already resolved in this namespace.
+  if (namespace && stopIdCacheByNamespace[namespace]?.[station.id]) {
+    return stopIdCacheByNamespace[namespace][station.id];
   }
 
-  // Resolve live by coordinates against whichever backend is active.
+  // Resolve live by coordinates against whichever backend answers. This doubles
+  // as the probe that re-establishes activeBackend after a failover.
   try {
-    const data = await fetchFromTransitAPI(`/locations/nearby?latitude=${station.lat}&longitude=${station.lon}&results=1`);
-    if (data && data[0] && data[0].id) {
-      const id = data[0].id;
-      if (activeBackend && activeBackend.kind === 'db') {
-        dbStationIdCache[station.id] = id; // DB namespace
+    const resolved = await resolveStopByCoords(station.lat, station.lon, `stop lookup for ${station.name}`);
+    if (resolved) {
+      const ns = namespaceOf(resolved.backend);
+      if (ns === 'hafas') {
+        stationMappings[station.id] = resolved.id; // shared 900xxxxxxx namespace
       } else {
-        stationMappings[station.id] = id; // VBB namespace
+        (stopIdCacheByNamespace[ns] ||= {})[station.id] = resolved.id;
       }
-      return id;
+      return resolved.id;
     }
   } catch (err) {
     console.warn(`Failed to resolve station transit ID for ${station.name}:`, err.message);
@@ -283,24 +360,33 @@ export async function getStationVbbId(station) {
 }
 
 /**
+ * The stop-ID namespace a backend answers in. VBB and BVG share one, so failing
+ * over between them needs no re-resolution; every other backend is its own.
+ */
+function namespaceOf(backend) {
+  if (!backend) return null;
+  return backend.format === 'hafas' ? 'hafas' : backend.kind;
+}
+
+/**
  * Resolve Home coordinates to a stop ID, caching the result. As the first
- * transit call of a search this also establishes the active backend (VBB or
- * DB), so the returned ID and all later station IDs share one namespace.
+ * transit call of a search this also establishes the active backend, so the
+ * returned ID and all later station IDs share one namespace.
  */
 export async function getHomeVbbId(coords) {
   if (homeVbbId && homeVbbCoords && homeVbbCoords.lat === coords.lat && homeVbbCoords.lon === coords.lon) {
     return homeVbbId;
   }
   try {
-    const data = await fetchFromTransitAPI(`/locations/nearby?latitude=${coords.lat}&longitude=${coords.lon}&results=1`);
-    if (data && data[0] && data[0].id) {
-      homeVbbId = data[0].id;
+    const resolved = await resolveStopByCoords(coords.lat, coords.lon, 'home stop lookup');
+    if (resolved) {
+      homeVbbId = resolved.id;
       homeVbbCoords = { lat: coords.lat, lon: coords.lon };
-      homeVbbBackend = activeBackend ? activeBackend.kind : null;
+      homeVbbBackend = namespaceOf(resolved.backend);
       return homeVbbId;
     }
   } catch (err) {
-    console.error('Failed to resolve Home VBB/DB ID:', err);
+    console.error('Failed to resolve Home stop ID:', err);
   }
   return null;
 }
@@ -312,21 +398,22 @@ export async function getHomeVbbId(coords) {
  * active backend. But a later station lookup can fail that backend over to
  * another one with a different stop-ID namespace. If that happens, the cached
  * Home ID no longer matches, and pairing it with a freshly-resolved station ID
- * in one /journeys query would silently return nothing. Re-resolve Home against
+ * in one journey query would silently return nothing. Re-resolve Home against
  * whatever backend is now active so both IDs always share one namespace.
+ *
+ * Compared by namespace rather than by kind, so a VBB→BVG failover (same
+ * 900xxxxxxx IDs) doesn't spend a request re-resolving to the same value.
  */
 export async function getHomeStopIdForActiveBackend() {
-  const activeKind = activeBackend ? activeBackend.kind : null;
-  if (!homeVbbCoords || (homeVbbId && homeVbbBackend === activeKind)) {
+  const activeNamespace = assumableNamespace();
+  if (!homeVbbCoords || (homeVbbId && homeVbbBackend === activeNamespace)) {
     return homeVbbId;
   }
   try {
-    const data = await fetchFromTransitAPI(
-      `/locations/nearby?latitude=${homeVbbCoords.lat}&longitude=${homeVbbCoords.lon}&results=1`
-    );
-    if (data && data[0] && data[0].id) {
-      homeVbbId = data[0].id;
-      homeVbbBackend = activeBackend ? activeBackend.kind : null;
+    const resolved = await resolveStopByCoords(homeVbbCoords.lat, homeVbbCoords.lon, 'home stop re-resolve');
+    if (resolved) {
+      homeVbbId = resolved.id;
+      homeVbbBackend = namespaceOf(resolved.backend);
     }
   } catch (err) {
     console.warn('Failed to re-resolve Home ID for active backend:', err.message);
@@ -390,33 +477,88 @@ export async function calculateTrainRoute(fromStopId, toStopId, date, time, time
   return null;
 }
 
+const JOURNEY_RESULTS = 8;
+
+// MOTIS transit-mode allowlist standing in for HAFAS's `bus=false`. Keeps every
+// rail product plus the local connectors (U-Bahn/tram) the app treats as
+// acceptable feeder legs, and drops BUS/COACH.
+const MOTIS_RAIL_MODES = [
+  'HIGHSPEED_RAIL', 'LONG_DISTANCE', 'NIGHT_RAIL',
+  'REGIONAL_FAST_RAIL', 'REGIONAL_RAIL',
+  'METRO', 'SUBWAY', 'TRAM',
+].join(',');
+
 /**
- * Perform actual VBB journey query.
+ * Build an ISO timestamp carrying the browser's local UTC offset, e.g.
+ * "2026-07-31T11:00:00+02:00". Both formats accept this: HAFAS uses it to pin
+ * the local wall-clock time, and MOTIS parses the offset correctly (verified).
+ */
+function buildLocalIsoTimestamp(date, time) {
+  const localDate = new Date(`${date}T${time}:00`);
+  const offsetMin = -localDate.getTimezoneOffset();
+  const sign = offsetMin >= 0 ? '+' : '-';
+  const pad = num => String(Math.abs(num)).padStart(2, '0');
+  const hours = pad(Math.floor(Math.abs(offsetMin) / 60));
+  const mins = pad(offsetMin % 60);
+  return `${date}T${time}:00${sign}${hours}:${mins}`;
+}
+
+/**
+ * Build the journey-query path for one backend.
+ */
+function buildJourneyPath(backend, fromStopId, toStopId, dt, timeType, excludeBuses) {
+  if (backend.format === 'motis') {
+    const params = new URLSearchParams({
+      fromPlace: fromStopId,
+      toPlace: toStopId,
+      numItineraries: String(JOURNEY_RESULTS),
+    });
+    if (excludeBuses) params.set('transitModes', MOTIS_RAIL_MODES);
+    if (dt) {
+      params.set('time', dt);
+      if (timeType === 'arrival') params.set('arriveBy', 'true');
+    }
+    return `/api/v1/plan?${params.toString()}`;
+  }
+
+  let path = `/journeys?from=${encodeURIComponent(fromStopId)}&to=${encodeURIComponent(toStopId)}&results=${JOURNEY_RESULTS}`;
+  if (excludeBuses) path += '&bus=false';
+  if (dt) path += `&${timeType}=${encodeURIComponent(dt)}`;
+  return path;
+}
+
+/**
+ * Query the active backend for connections and normalize them into the app's
+ * own journey shape (see normalizeHafasJourneys for the canonical fields).
  */
 async function fetchConnection(fromStopId, toStopId, date, time, timeType, excludeBuses) {
   try {
-    let path = `/journeys?from=${fromStopId}&to=${toStopId}&results=8`;
-    if (excludeBuses) {
-      path += '&bus=false';
-    }
-    
-    // Add date/time parameters if provided
-    if (date && time) {
-      // Calculate local timezone offset to append to query string (e.g. +02:00)
-      const localDate = new Date(`${date}T${time}:00`);
-      const offsetMin = -localDate.getTimezoneOffset();
-      const sign = offsetMin >= 0 ? '+' : '-';
-      const pad = num => String(Math.abs(num)).padStart(2, '0');
-      const hours = pad(Math.floor(offsetMin / 60));
-      const mins = pad(offsetMin % 60);
-      const dt = `${date}T${time}:00${sign}${hours}:${mins}`;
-      path += `&${timeType}=${encodeURIComponent(dt)}`;
-    }
-    
-    const data = await fetchFromTransitAPI(path, {
-      headers: { 'Accept-Language': 'en' }
-    });
-    
+    const dt = (date && time) ? buildLocalIsoTimestamp(date, time) : null;
+
+    const { backend, data } = await fetchFromTransitAPI(
+      b => buildJourneyPath(b, fromStopId, toStopId, dt, timeType, excludeBuses),
+      { headers: { 'Accept-Language': 'en' } },
+      `journeys ${fromStopId} -> ${toStopId}`
+    );
+
+    return backend.format === 'motis'
+      ? normalizeMotisJourneys(data)
+      : normalizeHafasJourneys(data);
+  } catch (err) {
+    console.warn(`fetchConnection failed from ${fromStopId} to ${toStopId}:`, err.message);
+  }
+  return null;
+}
+
+/**
+ * Normalize a HAFAS `/journeys` response into the app's journey shape.
+ *
+ * This shape is the internal contract every downstream consumer reads —
+ * deduplicateJourneys, calculateFrequency, checkCancellations, sortResults in
+ * routeList.js, and populateTrainTimeline in routeDetailsPanel.js. Any new
+ * backend normalizer must produce exactly these fields.
+ */
+function normalizeHafasJourneys(data) {
     if (data && data.journeys && data.journeys.length > 0) {
       const processedJourneys = data.journeys.map(journey => {
         const legs = journey.legs || [];
@@ -465,6 +607,7 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
         
         // Format leg details for popup / side dashboard
         const formattedLegs = legs.map(leg => {
+          const isWalking = leg.walking === true || !leg.line;
           const isBus = leg.line && (leg.line.mode === 'bus' || leg.line.product === 'bus');
           const isBusEV = isBus && (leg.remarks || []).some(rem => 
             rem.code === 'EV' || rem.text?.toLowerCase().includes('ersatzverkehr') || rem.text?.toLowerCase().includes('replacement')
@@ -491,12 +634,21 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
             isBus,
             isBusEV,
             cancelled: leg.cancelled === true,
+            // null on walking legs, where the question doesn't apply.
+            bikeCarriage: isWalking ? null : legCarriesBikes(leg),
             rawProduct: leg.line?.product || '',
             rawMode: leg.line?.mode || '',
             tripId: leg.tripId || '',
             plannedDeparture: leg.plannedDeparture || leg.departure || ''
           };
         });
+
+        // A bike ride is only possible if EVERY transit leg carries bikes — one
+        // leg that doesn't breaks the whole door-to-door trip.
+        const ridableLegs = formattedLegs.filter(l => l.bikeCarriage !== null);
+        const bikesAllowed = ridableLegs.length > 0
+          ? ridableLegs.every(l => l.bikeCarriage === true)
+          : null;
         
         return {
           durationMin,
@@ -506,15 +658,174 @@ async function fetchConnection(fromStopId, toStopId, date, time, timeType, exclu
           legs: formattedLegs,
           usesBus,
           hasSEV,
-          isLocked: false
+          bikesAllowed,
+          isLocked: false,
+          dataQuality: 'full'
         };
       });
       return processedJourneys;
     }
-  } catch (err) {
-    console.warn(`fetchConnection failed from ${fromStopId} to ${toStopId}:`, err.message);
-  }
   return null;
+}
+
+// MOTIS `leg.mode` → the HAFAS-flavoured {mode, product} pair the app's leg
+// fields and isBus checks are written against. Non-transit modes map to null.
+const MOTIS_MODE_MAP = {
+  HIGHSPEED_RAIL:     { mode: 'train', product: 'express' },
+  LONG_DISTANCE:      { mode: 'train', product: 'express' },
+  NIGHT_RAIL:         { mode: 'train', product: 'express' },
+  REGIONAL_FAST_RAIL: { mode: 'train', product: 'regional' },
+  REGIONAL_RAIL:      { mode: 'train', product: 'regional' },
+  METRO:              { mode: 'train', product: 'suburban' }, // S-Bahn
+  SUBWAY:             { mode: 'train', product: 'subway' },   // U-Bahn
+  TRAM:               { mode: 'train', product: 'tram' },
+  BUS:                { mode: 'bus',   product: 'bus' },
+  COACH:              { mode: 'bus',   product: 'bus' },
+  FERRY:              { mode: 'watercraft', product: 'ferry' },
+};
+
+/**
+ * MOTIS emits `routeShortName` with the trip number appended for regional rail,
+ * e.g. "RE1 (73770)". Strip it: the line name is displayed directly, joined into
+ * `lines`, and prefix-matched by getMainTransitLeg / checkCancellations.
+ */
+function cleanMotisLineName(routeShortName) {
+  if (!routeShortName) return '';
+  return routeShortName.replace(/\s*\(\d+\)\s*$/, '').trim();
+}
+
+/**
+ * Render an instant as HH:MM in a given IANA zone.
+ *
+ * MOTIS returns UTC ("...T09:16:00Z"), so the HAFAS-oriented formatTimeClock —
+ * which slices HH:MM straight out of the ISO string to preserve the API's own
+ * local offset — would render 11:16 Berlin time as 09:16. Convert explicitly
+ * instead, using the zone MOTIS reports on the stop.
+ */
+function formatTimeInZone(isoString, timeZone) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone: timeZone || 'Europe/Berlin',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).format(d);
+  } catch {
+    return formatTimeClock(isoString);
+  }
+}
+
+/**
+ * Normalize a MOTIS (Transitous) `/api/v1/plan` response into the same journey
+ * shape as normalizeHafasJourneys.
+ *
+ * Both endpoints of the query are resolved stop IDs, so itineraries start and
+ * end at stops and `durationMin` stays station-to-station — comparable with the
+ * HAFAS path, which matters because it's the sole ranking input in sortResults.
+ *
+ * MOTIS carries no occupancy (`loadFactor`), no `EV` replacement-bus code and no
+ * `FK` bike-carriage code, so `occupancy`/`hasSEV` are null rather than
+ * defaulted — a missing signal, not a claim of an empty train. `dataQuality`
+ * marks the journey so the UI can say so.
+ */
+function normalizeMotisJourneys(data) {
+  const itineraries = data?.itineraries;
+  if (!Array.isArray(itineraries) || itineraries.length === 0) return null;
+
+  const journeys = itineraries.map(itinerary => {
+    const rawLegs = itinerary.legs || [];
+
+    const depTime = itinerary.startTime ? new Date(itinerary.startTime) : null;
+    const arrTime = itinerary.endTime ? new Date(itinerary.endTime) : null;
+    const durationMin = (depTime && arrTime && !isNaN(depTime) && !isNaN(arrTime))
+      ? Math.round((arrTime - depTime) / 1000 / 60)
+      : null;
+
+    const lines = [];
+    let usesBus = false;
+
+    const formattedLegs = rawLegs.map(leg => {
+      const products = MOTIS_MODE_MAP[leg.mode] || null;
+      const isWalking = !products;
+      const lineName = cleanMotisLineName(leg.routeShortName);
+      if (!isWalking && lineName) lines.push(lineName);
+      if (products?.mode === 'bus') usesBus = true;
+
+      const tz = leg.from?.tz || leg.to?.tz;
+      const lineColor = leg.routeColor
+        ? { bg: `#${leg.routeColor}`, fg: `#${leg.routeTextColor || 'fff'}` }
+        : { bg: '#888', fg: '#fff' };
+
+      return {
+        lineName: lineName || (isWalking ? 'Walk' : 'Transit'),
+        lineColor,
+        originName: leg.from?.name || 'Start',
+        destName: leg.to?.name || 'End',
+        depTime: formatTimeInZone(leg.startTime, tz),
+        arrTime: formatTimeInZone(leg.endTime, tz),
+        depPlatform: leg.from?.track || '',
+        arrPlatform: leg.to?.track || '',
+        duration: Number.isFinite(leg.duration) ? Math.round(leg.duration / 60) : 0,
+        isBus: products?.mode === 'bus',
+        // MOTIS has no EV remark code, so replacement buses are indistinguishable
+        // from scheduled ones here.
+        isBusEV: false,
+        cancelled: leg.cancelled === true,
+        // MOTIS `bikesAllowed` splits by source feed, not by trip — see
+        // legCarriesBikes for why it isn't trustworthy enough to surface.
+        bikeCarriage: null,
+        rawProduct: products?.product || '',
+        rawMode: products?.mode || (isWalking ? 'walking' : ''),
+        tripId: leg.tripId || '',
+        // Raw ISO (UTC) — the dedupe key and calculateFrequency both parse this
+        // with new Date(), which handles the Z suffix correctly.
+        plannedDeparture: leg.scheduledStartTime || leg.startTime || ''
+      };
+    });
+
+    return {
+      durationMin,
+      lines,
+      transfers: Number.isFinite(itinerary.transfers) ? itinerary.transfers : Math.max(0, lines.length - 1),
+      occupancy: null,
+      legs: formattedLegs,
+      usesBus,
+      hasSEV: null,
+      bikesAllowed: null,
+      isLocked: false,
+      dataQuality: 'reduced'
+    };
+  })
+  // Drop walk-only itineraries so calculateTrainRoute falls through to its
+  // bus-allowed retry instead of presenting a walk as a train connection.
+  .filter(j => j.lines.length > 0);
+
+  return journeys.length > 0 ? journeys : null;
+}
+
+/**
+ * Whether a HAFAS leg carries bicycles, from the `FK` ("Fahrradmitnahme")
+ * remark: {code:'FK', text:'Bicycle conveyance (S+U Alexanderplatz Bhf …)'}.
+ *
+ * This is a real per-trip flag, not boilerplate — sampled live across four
+ * corridors it was present on every regional and U-Bahn leg, absent on every
+ * replacement-bus and ICE leg, and mixed on S-Bahn. Absence is therefore treated
+ * as "no bike carriage", which is the safe direction for this app: a false
+ * "bikes OK" would strand someone at a platform, whereas a false warning just
+ * pushes them to a different departure.
+ *
+ * Note this is deliberately HAFAS-only. Transitous exposes a GTFS `bikesAllowed`
+ * boolean, but it splits by source feed rather than by trip — de_VBB.gtfs
+ * reports true for everything and de_DELFI reports false for almost everything,
+ * including RB24 and RE3 services that plainly do carry bikes. Surfacing that
+ * would be worse than staying silent, so MOTIS journeys leave this null and lean
+ * on the reduced-data marker instead.
+ */
+function legCarriesBikes(leg) {
+  return (leg.remarks || []).some(rem => rem.code === 'FK');
 }
 
 /**

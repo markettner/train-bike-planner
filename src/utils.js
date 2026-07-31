@@ -3,6 +3,17 @@
  */
 
 /**
+ * Tooltip shown wherever a journey carries `dataQuality: 'reduced'`, i.e. it was
+ * served by the Transitous backup backend after the HAFAS mirrors failed.
+ * Transitous is GTFS-based: no occupancy figures, no replacement-bus flags, and
+ * real-time coverage varies by operator.
+ */
+export const REDUCED_DATA_TITLE =
+  'Served by the backup transit provider (Transitous) because the primary API was unreachable. '
+  + 'Times and platforms are accurate, but occupancy and replacement-bus info are unavailable and '
+  + 'delay data is only partial.';
+
+/**
  * Haversine distance between two {lat, lon} points in km.
  */
 export function haversineKm(a, b) {

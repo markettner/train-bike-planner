@@ -8,7 +8,7 @@ import { exportRouteAsGPX } from '../algorithm/gpxExport.js';
 import { selectRoute, toggleRouteVisibility } from './mapRenderer.js';
 import { showRouteDetails } from './routeDetailsPanel.js';
 import { isMobile, showRouteDetails as mobileShowDetails } from './mobileSheet.js';
-import { escapeHtml, formatTime } from '../utils.js';
+import { escapeHtml, formatTime, REDUCED_DATA_TITLE } from '../utils.js';
 
 const sidebar = document.getElementById('route-sidebar');
 const routeList = document.getElementById('route-list');
@@ -194,6 +194,35 @@ function getFrequencyBadge(frequency) {
   return `<span class="occupancy-badge ${className}">⏱ ${shortLabel}</span>`;
 }
 
+/**
+ * Warn when a leg of the journey won't take the bike — the one constraint that
+ * can invalidate a train+bike trip outright. Only the negative case is badged:
+ * most connections carry bikes, so a permanent "bike OK" would be noise while
+ * the exception is what needs to be seen. `null` means the backup backend served
+ * this journey and has no trustworthy answer.
+ */
+function getBikeCarriageBadge(trainStats) {
+  if (trainStats?.bikesAllowed !== false) return '';
+  const blocking = (trainStats.legs || [])
+    .filter(l => l.bikeCarriage === false)
+    .map(l => l.lineName)
+    .join(', ');
+  const title = blocking
+    ? `No bicycle conveyance on: ${blocking}. You'd have to ride that leg or pick another departure.`
+    : 'At least one leg of this connection does not carry bicycles.';
+  return `<span class="occupancy-badge badge-high" title="${escapeHtml(title)}">🚲 no bike</span>`;
+}
+
+/**
+ * Marker for journeys served by the Transitous backup backend, which has no
+ * occupancy or replacement-bus data. Makes the missing badges legible as
+ * "unavailable from this provider" rather than as an absence of problems.
+ */
+function getReducedDataBadge(dataQuality) {
+  if (dataQuality !== 'reduced') return '';
+  return `<span class="occupancy-badge badge-offline" title="${escapeHtml(REDUCED_DATA_TITLE)}">↯ backup data</span>`;
+}
+
 function buildCard(result) {
   const color = result.lines[0].color;
   const isVisible = visibilityState[result.id] !== false;
@@ -234,8 +263,10 @@ function buildCard(result) {
     trainInfoHtml = `
       <span>${result.trainStats.durationMin}m</span>
       ${hasCancellation ? `<span class="occupancy-badge badge-high" style="font-size: 9px; padding: 1px 4px;">❌ Cancelled</span>` : ''}
+      ${getBikeCarriageBadge(result.trainStats)}
       ${getOccupancyBadge(result.trainStats.occupancy)}
       ${getFrequencyBadge(result.trainStats.frequency)}
+      ${getReducedDataBadge(result.trainStats.dataQuality)}
     `;
   }
 

@@ -5,7 +5,7 @@
 
 import { isMobile, showRouteList } from './mobileSheet.js';
 import { clearSelection } from './routeList.js';
-import { escapeHtml, formatTime } from '../utils.js';
+import { escapeHtml, formatTime, REDUCED_DATA_TITLE } from '../utils.js';
 
 const panel = document.getElementById('route-details-panel');
 const routeNameEl = document.getElementById('route-details-name');
@@ -107,9 +107,16 @@ export function populateTrainTimeline(result, stationName, containerEl) {
   // --- LEFT COLUMN: Journey Timeline ---
   html += `<div class="details-timeline-col">`;
 
-  // Summary header
+  // Summary header. Occupancy is null when the backup backend served this
+  // journey (MOTIS carries no load-factor data) — show the reduced-data note in
+  // its place rather than an "unknown occupancy" label.
   const occupancyLabel = trainStats.occupancy === 'high' ? 'Packed Train Warning ⚠️' : `${trainStats.occupancy} occupancy`;
   const occupancyClass = trainStats.occupancy === 'high' ? 'occupancy-high' : (trainStats.occupancy === 'medium' ? 'occupancy-med' : 'occupancy-low');
+  const summaryAside = trainStats.occupancy
+    ? `<span class="details-occupancy-label ${occupancyClass}">${occupancyLabel}</span>`
+    : (trainStats.dataQuality === 'reduced'
+      ? `<span class="details-reduced-label" title="${escapeHtml(REDUCED_DATA_TITLE)}">backup provider · reduced data</span>`
+      : '');
 
   const totalMin = (trainStats.durationMin != null && result?.estimatedTimeMin != null)
     ? trainStats.durationMin + result.estimatedTimeMin
@@ -118,7 +125,7 @@ export function populateTrainTimeline(result, stationName, containerEl) {
   html += `
     <div class="details-summary-header">
       <span class="details-transfers-label">${trainStats.transfers === 0 ? 'Direct ride' : `${trainStats.transfers} transfer${trainStats.transfers > 1 ? 's' : ''}`}${totalMin != null ? ` · Σ ${formatTime(totalMin)} door-to-door` : ''}</span>
-      <span class="details-occupancy-label ${occupancyClass}">${occupancyLabel}</span>
+      ${summaryAside}
     </div>
   `;
 
@@ -136,6 +143,7 @@ export function populateTrainTimeline(result, stationName, containerEl) {
           <div class="leg-header-left">
             <span class="leg-badge" style="background:${escapeHtml(badgeBg)}; color:${escapeHtml(badgeFg)};">${escapeHtml(leg.lineName)}</span>
             ${isCancelled ? '<span class="leg-cancelled-label">Cancelled ❌</span>' : ''}
+            ${leg.bikeCarriage === false ? '<span class="leg-nobike-label" title="No bicycle conveyance on this leg">🚲 no bike</span>' : ''}
           </div>
           <span class="leg-duration">${leg.duration} min</span>
         </div>
@@ -177,6 +185,10 @@ export function populateTrainTimeline(result, stationName, containerEl) {
         let occLabel = 'low';
         if (alt.occupancy === 'medium') { occClass = 'occ-med'; occLabel = 'med'; }
         else if (alt.occupancy === 'high') { occClass = 'occ-high'; occLabel = 'packed'; }
+        // No occupancy data (backup backend) — show nothing rather than "low".
+        const occHtml = alt.occupancy
+          ? `<span class="departure-occ ${occClass}">${occLabel}</span>`
+          : '';
 
         const isAltCancelled = alt.cancelled === true;
         const cancelledClass = isAltCancelled ? ' cancelled' : '';
@@ -194,7 +206,7 @@ export function populateTrainTimeline(result, stationName, containerEl) {
             </div>
             ${isAltCancelled
               ? `<span class="departure-cancelled">Cancelled</span>`
-              : (adviceHtml ? adviceHtml : `<span class="departure-occ ${occClass}">${occLabel}</span>`)
+              : (adviceHtml || occHtml)
             }
           </div>
         `;

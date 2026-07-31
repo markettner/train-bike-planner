@@ -18,6 +18,7 @@ import {
   extractTime,
   getStationVbbId,
   getHomeStopIdForActiveBackend,
+  getActiveBackendKind,
   calculateTrainRoute
 } from './routeService.js';
 import { haversineKm, toRad } from '../utils.js';
@@ -348,7 +349,7 @@ async function processTransitQueue() {
 
     try {
       // Resolve the home stop ID lazily here so bike routing was never blocked
-      // on it. A null result means neither VBB nor DB could be reached at all —
+      // on it. A null result means no transit backend could be reached at all —
       // that's a transit-API outage, distinct from "this route has no connection".
       const homeVbbId = await transitConfig.homeVbbIdPromise;
       if (myGeneration !== queueGeneration) return; // superseded while awaiting
@@ -362,16 +363,42 @@ async function processTransitQueue() {
           // Resolving the station ID may have failed the active backend over to
           // one with a different stop-ID namespace. Re-fetch the Home ID against
           // whatever backend is now active so both IDs in the journey query share
-          // one namespace (a VBB home + DB station would silently return nothing).
+          // one namespace (mixing them returns nothing useful — HAFAS silently
+          // returns no journeys, MOTIS 404s).
           const homeStopId = await getHomeStopIdForActiveBackend();
           if (myGeneration !== queueGeneration) return; // superseded while awaiting
-          const trainStats = await calculateTrainRoute(
+          const backendBefore = getActiveBackendKind();
+          let trainStats = await calculateTrainRoute(
             homeStopId || homeVbbId,
             stationVbbId,
             transitConfig.date,
             transitConfig.time,
             transitConfig.timeType
           );
+          if (myGeneration !== queueGeneration) return; // superseded while awaiting
+
+          // The journey query itself can be what discovers an outage. By then
+          // both IDs were already resolved against the old backend, and handing
+          // them to a fallback in a different namespace fails (MOTIS 404s on
+          // VBB's 900xxxxxxx IDs). Re-resolve both against whatever is serving
+          // now and retry once, so the station where the failover happens isn't
+          // wrongly reported as having no connection.
+          if (!trainStats && getActiveBackendKind() !== backendBefore) {
+            const retryStationId = await getStationVbbId(result.station);
+            const retryHomeId = await getHomeStopIdForActiveBackend();
+            if (myGeneration !== queueGeneration) return; // superseded while awaiting
+            if (retryStationId && retryHomeId) {
+              trainStats = await calculateTrainRoute(
+                retryHomeId,
+                retryStationId,
+                transitConfig.date,
+                transitConfig.time,
+                transitConfig.timeType
+              );
+              if (myGeneration !== queueGeneration) return; // superseded while awaiting
+            }
+          }
+
           if (trainStats) {
             result.trainStats = trainStats;
             result.trainStatsStatus = 'success';
