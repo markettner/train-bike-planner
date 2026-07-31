@@ -4,7 +4,17 @@ dist/
 .DS_Store
 .claude/
 .gemini/
-scratch/
+# Scratch is throwaway (one-off probe scripts), with one exception: the captured
+# API responses screenshot-test.mjs replays as fixtures. It reads three of these
+# at module scope, so without them the suite can't even start on a fresh clone.
+# Listed individually rather than un-ignoring *.json, so a stray scratch file
+# doesn't get committed by accident.
+scratch/*
+!scratch/journey_test.json
+!scratch/sev_test.json
+!scratch/sev_test_no_bus.json
+!scratch/motis_journey_test.json
+!scratch/motis_reverse_geocode_test.json
 screenshots/
 screenshot-test-output/
 

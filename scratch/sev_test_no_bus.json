@@ -1,0 +1,621 @@
+{
+   "earlierRef" : "3|OB|MT#14#13593#13593#13704#13704#0#0#485#13560#1#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#7062026|RT#100000|US#1|RS#INIT",
+   "journeys" : [
+      {
+         "cycle" : {
+            "min" : 3600
+         },
+         "legs" : [
+            {
+               "alternatives" : [
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1505",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T11:33:00+02:00",
+                     "tripId" : "1|90869|1|86|7062026",
+                     "when" : "2026-06-07T11:33:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Senftenberg",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#00b300",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "1967",
+                        "id" : "de-vbb-12072477-r-bahn-re7",
+                        "mode" : "train",
+                        "name" : "RE7",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T11:53:00+02:00",
+                     "tripId" : "1|91458|0|86|7062026",
+                     "when" : "2026-06-07T11:53:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1492",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T12:33:00+02:00",
+                     "tripId" : "1|90879|0|86|7062026",
+                     "when" : "2026-06-07T12:33:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1504",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T13:33:00+02:00",
+                     "tripId" : "1|90869|2|86|7062026",
+                     "when" : "2026-06-07T13:33:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-07T11:17:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 3600,
+                  "min" : 1200,
+                  "nr" : 4
+               },
+               "departure" : "2026-06-07T10:33:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "1",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260019",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260019"
+                  },
+                  "location" : {
+                     "id" : "900260019",
+                     "latitude" : 52.029924,
+                     "longitude" : 13.721584,
+                     "type" : "location"
+                  },
+                  "name" : "Brand, Tropical Islands Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260019",
+                  "type" : "stop"
+               },
+               "direction" : "Cottbus Hbf",
+               "line" : {
+                  "adminCode" : "800165",
+                  "color" : {
+                     "bg" : "#ffd502",
+                     "fg" : "#000"
+                  },
+                  "fahrtNr" : "1493",
+                  "id" : "de-vbb-11000000-r-bahn-re2-db",
+                  "mode" : "train",
+                  "name" : "RE2",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "regional",
+                  "productName" : "RE",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:17:00+02:00",
+               "plannedArrivalPlatform" : "1",
+               "plannedDeparture" : "2026-06-07T10:33:00+02:00",
+               "plannedDeparturePlatform" : "1",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Brand, Tropical Islands Bhf)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "hl",
+                     "text" : "Fahrradmitnahme leicht gemacht: <a href=\"http://www.vbb.de/radimregio\" target=\"_blank\">www.vbb.de/radimregio</a>",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "gw",
+                     "text" : "vehicle-mounted access aid",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "WV",
+                     "text" : "Wifi available",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|90878|0|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T11:17:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T11:17:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900260019",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260019"
+                  },
+                  "location" : {
+                     "id" : "900260019",
+                     "latitude" : 52.029924,
+                     "longitude" : 13.721584,
+                     "type" : "location"
+                  },
+                  "name" : "Brand, Tropical Islands Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260019",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900260019",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260019"
+                  },
+                  "location" : {
+                     "id" : "900260019",
+                     "latitude" : 52.029924,
+                     "longitude" : 13.721584,
+                     "type" : "location"
+                  },
+                  "name" : "Brand, Tropical Islands Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260019",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:17:00+02:00",
+               "plannedDeparture" : "2026-06-07T11:17:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T12:24:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "2",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 3600,
+                  "min" : 3600,
+                  "nr" : 3
+               },
+               "departure" : "2026-06-07T12:13:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "2",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260016",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260016"
+                  },
+                  "location" : {
+                     "id" : "900260016",
+                     "latitude" : 52.159297,
+                     "longitude" : 13.650902,
+                     "type" : "location"
+                  },
+                  "name" : "Groß Köris, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260016",
+                  "type" : "stop"
+               },
+               "direction" : "Bestensee",
+               "line" : {
+                  "adminCode" : "800165",
+                  "color" : {
+                     "bg" : "#00b300",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "2085",
+                  "id" : "de-vbb-12072477-r-bahn-re7",
+                  "mode" : "train",
+                  "name" : "RE7",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "regional",
+                  "productName" : "RE",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900260019",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260019"
+                  },
+                  "location" : {
+                     "id" : "900260019",
+                     "latitude" : 52.029924,
+                     "longitude" : 13.721584,
+                     "type" : "location"
+                  },
+                  "name" : "Brand, Tropical Islands Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260019",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T12:24:00+02:00",
+               "plannedArrivalPlatform" : null,
+               "plannedDeparture" : "2026-06-07T12:13:00+02:00",
+               "plannedDeparturePlatform" : null,
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Brand, Tropical Islands Bhf)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Groß Köris, Bahnhof)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "gw",
+                     "text" : "vehicle-mounted access aid",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "WV",
+                     "text" : "Wifi available",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.13",
+                     "text" : "high occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|91593|2|86|7062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=Brand, Tropical Islands Bhf@L=900260019@a=128@$202606071033$202606071117$     RE2$$1$$$$$$§T$A=1@O=Brand, Tropical Islands Bhf@L=900260019@a=128@$A=1@O=Groß Köris, Bahnhof@L=900260016@a=128@$202606071213$202606071224$     RE7$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzIjSElOIzAjRUNLIzEzNTkzfDEzNTkzfDEzNzA0fDEzNzA0fDB8MHw0ODV8MTM1NjB8MXwwfDEwfDB8MHwtMjE0NzQ4MzY0OCNHQU0jNzA2MjYxMDMzIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzkwODc4I1RBIzAjREEjNzA2MjYjMVMjOTAwMjAwMDAwIzFUIzkzNSNMUyM5MDA0NzAwMDAjTFQjMTE1NSNQVSM4NiNSVCMxI0NBI05SRSNaRSNSRTIjWkIjICAgICBSRTIjUEMjNiNGUiM5MDAxMDAwMDMjRlQjMTAzMyNUTyM5MDAyNjAwMTkjVFQjMTExNyMKWiNWTiMxI1NUIzE3ODA2MTU0MzkjUEkjMCNaSSM5MTU5MyNUQSMyI0RBIzcwNjI2IzFTIzkwMDQzNTAwMCMxVCMxMTE0I0xTIzkwMDI2MDYxMSNMVCMxMjMwI1BVIzg2I1JUIzEjQ0EjTlJFI1pFI1JFNyNaQiMgICAgIFJFNyNQQyM2I0ZSIzkwMDI2MDAxOSNGVCMxMjEzI1RPIzkwMDI2MDAxNiNUVCMxMjI0Iw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      },
+      {
+         "cycle" : {
+            "min" : 7200
+         },
+         "legs" : [
+            {
+               "alternatives" : [
+                  {
+                     "delay" : 0,
+                     "direction" : "Senftenberg",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#00b300",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "1966",
+                        "id" : "de-vbb-12072477-r-bahn-re7",
+                        "mode" : "train",
+                        "name" : "RE7",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T13:53:00+02:00",
+                     "tripId" : "1|91458|1|86|7062026",
+                     "when" : "2026-06-07T13:53:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Senftenberg",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#00b300",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "1965",
+                        "id" : "de-vbb-12072477-r-bahn-re7",
+                        "mode" : "train",
+                        "name" : "RE7",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T15:53:00+02:00",
+                     "tripId" : "1|91458|2|86|7062026",
+                     "when" : "2026-06-07T15:53:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-07T12:33:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 7200,
+                  "min" : 7200,
+                  "nr" : 2
+               },
+               "departure" : "2026-06-07T11:53:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "1",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260016",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260016"
+                  },
+                  "location" : {
+                     "id" : "900260016",
+                     "latitude" : 52.159297,
+                     "longitude" : 13.650902,
+                     "type" : "location"
+                  },
+                  "name" : "Groß Köris, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260016",
+                  "type" : "stop"
+               },
+               "direction" : "Senftenberg",
+               "line" : {
+                  "adminCode" : "800165",
+                  "color" : {
+                     "bg" : "#00b300",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "1967",
+                  "id" : "de-vbb-12072477-r-bahn-re7",
+                  "mode" : "train",
+                  "name" : "RE7",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "regional",
+                  "productName" : "RE",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T12:33:00+02:00",
+               "plannedArrivalPlatform" : "1",
+               "plannedDeparture" : "2026-06-07T11:53:00+02:00",
+               "plannedDeparturePlatform" : "1",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Groß Köris, Bahnhof)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "gw",
+                     "text" : "vehicle-mounted access aid",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "WV",
+                     "text" : "Wifi available",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.13",
+                     "text" : "high occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|91458|0|86|7062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=Groß Köris, Bahnhof@L=900260016@a=128@$202606071153$202606071233$     RE7$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzEjSElOIzAjRUNLIzEzNjczfDEzNjczfDEzNzEzfDEzNzEzfDB8MHw1fDEzNTk0fDJ8MHwxMHwwfDB8LTIxNDc0ODM2NDgjR0FNIzcwNjI2MTE1MyMKWiNWTiMxI1NUIzE3ODA2MTU0MzkjUEkjMCNaSSM5MTQ1OCNUQSMwI0RBIzcwNjI2IzFTIzkwMDU1MDA2NSMxVCMxMDA1I0xTIzkwMDQzNTAwMCNMVCMxMzQxI1BVIzg2I1JUIzEjQ0EjTlJFI1pFI1JFNyNaQiMgICAgIFJFNyNQQyM2I0ZSIzkwMDEwMDAwMyNGVCMxMTUzI1RPIzkwMDI2MDAxNiNUVCMxMjMzIw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      }
+   ],
+   "laterRef" : "3|OF|MT#14#13673#13673#13713#13713#0#0#5#13594#2#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#7062026|RT#100000|US#1|RS#INIT",
+   "realtimeDataUpdatedAt" : 1780780194
+}

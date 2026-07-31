@@ -1,0 +1,1540 @@
+{
+   "earlierRef" : "3|OB|MT#14#13562#13562#13653#13653#0#0#485#13560#1#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#7062026|RT#100000|US#1|RS#INIT",
+   "journeys" : [
+      {
+         "cycle" : {
+            "min" : 3600
+         },
+         "legs" : [
+            {
+               "arrival" : "2026-06-07T10:20:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "3",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 1200,
+                  "nr" : 7
+               },
+               "departure" : "2026-06-07T10:02:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "3",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "direction" : "Flughafen BER",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#992746",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "26450",
+                  "id" : "de-vbb-11000000-s-bahn-s9",
+                  "mode" : "train",
+                  "name" : "S9",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T10:20:00+02:00",
+               "plannedArrivalPlatform" : "3",
+               "plannedDeparture" : "2026-06-07T10:02:00+02:00",
+               "plannedDeparturePlatform" : "3",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Baumschulenweg (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|3916|6|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T10:20:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T10:20:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T10:20:00+02:00",
+               "plannedDeparture" : "2026-06-07T10:20:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T10:56:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "2",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 1200,
+                  "nr" : 7
+               },
+               "departure" : "2026-06-07T10:26:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "5",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "direction" : "S Königs Wusterhausen Bhf",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#cd9c53",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "19582",
+                  "id" : "de-vbb-11000000-s-bahn-s46",
+                  "mode" : "train",
+                  "name" : "S46",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T10:56:00+02:00",
+               "plannedArrivalPlatform" : "2",
+               "plannedDeparture" : "2026-06-07T10:26:00+02:00",
+               "plannedDeparturePlatform" : "5",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Baumschulenweg (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Königs Wusterhausen Bhf)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|1863|6|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T10:56:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T10:56:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T10:56:00+02:00",
+               "plannedDeparture" : "2026-06-07T10:56:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "alternatives" : [
+                  {
+                     "delay" : null,
+                     "direction" : "Streganz, Dorf",
+                     "line" : {
+                        "adminCode" : "RVS---",
+                        "fahrtNr" : "2894",
+                        "id" : "de-vbb-12061260-bus-724",
+                        "mode" : "bus",
+                        "name" : "724",
+                        "operator" : {
+                           "id" : "regionale-verkehrsgesellschaft-dahme-spreewald-mbh",
+                           "name" : "Regionale Verkehrsgesellschaft Dahme-Spreewald mbH",
+                           "type" : "operator"
+                        },
+                        "product" : "bus",
+                        "productName" : "Bus",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T12:35:00+02:00",
+                     "tripId" : "1|16568|0|86|7062026",
+                     "when" : "2026-06-07T12:35:00+02:00"
+                  },
+                  {
+                     "delay" : null,
+                     "direction" : "Bahnhof, Bestensee",
+                     "line" : {
+                        "adminCode" : "NBB---",
+                        "fahrtNr" : "356",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db-bus-rb2-ev1",
+                        "mode" : "bus",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "bus",
+                        "productName" : "Bus",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T13:04:00+02:00",
+                     "tripId" : "1|19780|2|86|7062026",
+                     "when" : "2026-06-07T13:04:00+02:00"
+                  },
+                  {
+                     "delay" : null,
+                     "direction" : "Bahnhof, Bestensee",
+                     "line" : {
+                        "adminCode" : "NBB---",
+                        "fahrtNr" : "357",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db-bus-rb2-ev1",
+                        "mode" : "bus",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "bus",
+                        "productName" : "Bus",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T15:04:00+02:00",
+                     "tripId" : "1|19780|3|86|7062026",
+                     "when" : "2026-06-07T15:04:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-07T11:21:00+02:00",
+               "arrivalDelay" : null,
+               "arrivalPlatform" : null,
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 7200,
+                  "min" : 1740,
+                  "nr" : 3
+               },
+               "departure" : "2026-06-07T11:04:00+02:00",
+               "departureDelay" : null,
+               "departurePlatform" : null,
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260611",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260611"
+                  },
+                  "location" : {
+                     "id" : "900260611",
+                     "latitude" : 52.242195,
+                     "longitude" : 13.634775,
+                     "type" : "location"
+                  },
+                  "name" : "Bestensee, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260611",
+                  "type" : "stop"
+               },
+               "direction" : "Bahnhof, Bestensee",
+               "line" : {
+                  "adminCode" : "NBB---",
+                  "fahrtNr" : "355",
+                  "id" : "de-vbb-11000000-r-bahn-re2-db-bus-rb2-ev1",
+                  "mode" : "bus",
+                  "name" : "RE2",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "bus",
+                  "productName" : "Bus",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:21:00+02:00",
+               "plannedArrivalPlatform" : null,
+               "plannedDeparture" : "2026-06-07T11:04:00+02:00",
+               "plannedDeparturePlatform" : null,
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "EV",
+                     "text" : "Train replacement bus",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|19780|1|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T11:21:00+02:00",
+               "arrivalDelay" : null,
+               "departure" : "2026-06-07T11:21:00+02:00",
+               "departureDelay" : null,
+               "destination" : {
+                  "id" : "900260611",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260611"
+                  },
+                  "location" : {
+                     "id" : "900260611",
+                     "latitude" : 52.242195,
+                     "longitude" : 13.634775,
+                     "type" : "location"
+                  },
+                  "name" : "Bestensee, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260611",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900260611",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260611"
+                  },
+                  "location" : {
+                     "id" : "900260611",
+                     "latitude" : 52.242195,
+                     "longitude" : 13.634775,
+                     "type" : "location"
+                  },
+                  "name" : "Bestensee, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260611",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:21:00+02:00",
+               "plannedDeparture" : "2026-06-07T11:21:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T11:33:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 3600,
+                  "min" : 3600,
+                  "nr" : 3
+               },
+               "departure" : "2026-06-07T11:28:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "1",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260016",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260016"
+                  },
+                  "location" : {
+                     "id" : "900260016",
+                     "latitude" : 52.159297,
+                     "longitude" : 13.650902,
+                     "type" : "location"
+                  },
+                  "name" : "Groß Köris, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260016",
+                  "type" : "stop"
+               },
+               "direction" : "Senftenberg",
+               "line" : {
+                  "adminCode" : "800165",
+                  "color" : {
+                     "bg" : "#00b300",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "2077",
+                  "id" : "de-vbb-12072477-r-bahn-re7",
+                  "mode" : "train",
+                  "name" : "RE7",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "regional",
+                  "productName" : "RE",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900260611",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260611"
+                  },
+                  "location" : {
+                     "id" : "900260611",
+                     "latitude" : 52.242195,
+                     "longitude" : 13.634775,
+                     "type" : "location"
+                  },
+                  "name" : "Bestensee, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260611",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:33:00+02:00",
+               "plannedArrivalPlatform" : null,
+               "plannedDeparture" : "2026-06-07T11:28:00+02:00",
+               "plannedDeparturePlatform" : null,
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Bestensee, Bahnhof)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (Groß Köris, Bahnhof)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "gw",
+                     "text" : "vehicle-mounted access aid",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "WV",
+                     "text" : "Wifi available",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|91496|1|86|7062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=S Baumschulenweg (Berlin)@L=900191001@a=128@$202606071002$202606071020$      S9$$1$$$$$$§T$A=1@O=S Baumschulenweg (Berlin)@L=900191001@a=128@$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$202606071026$202606071056$     S46$$1$$$$$$§T$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$A=1@O=Bestensee, Bahnhof@L=900260611@a=128@$202606071104$202606071121$     RE2$$1$$$$$$§T$A=1@O=Bestensee, Bahnhof@L=900260611@a=128@$A=1@O=Groß Köris, Bahnhof@L=900260016@a=128@$202606071128$202606071133$     RE7$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzQjSElOIzAjRUNLIzEzNTYyfDEzNTYyfDEzNjUzfDEzNjUzfDB8MHw0ODV8MTM1NjB8MXwwfDEwfDB8MHwtMjE0NzQ4MzY0OCNHQU0jNzA2MjYxMDAyIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzM5MTYjVEEjNiNEQSM3MDYyNiMxUyM5MDAwMjUzMjEjMVQjOTM1I0xTIzkwMDI2MDAwOSNMVCMxMDQ2I1BVIzg2I1JUIzEjQ0EjUy03I1pFI1M5I1pCIyAgICAgIFM5I1BDIzAjRlIjOTAwMTAwMDAzI0ZUIzEwMDIjVE8jOTAwMTkxMDAxI1RUIzEwMjAjClojVk4jMSNTVCMxNzgwNjE1NDM5I1BJIzAjWkkjMTg2MyNUQSM2I0RBIzcwNjI2IzFTIzkwMDAyNjIwNyMxVCM5NTYjTFMjOTAwMjYwMDAxI0xUIzEwNTYjUFUjODYjUlQjMSNDQSNTMTYjWkUjUzQ2I1pCIyAgICAgUzQ2I1BDIzAjRlIjOTAwMTkxMDAxI0ZUIzEwMjYjVE8jOTAwMjYwMDAxI1RUIzEwNTYjClojVk4jMSNTVCMxNzgwNjE1NDM5I1BJIzAjWkkjMTk3ODAjVEEjMSNEQSM3MDYyNiMxUyM5MDAyNjAwMDEjMVQjMTEwNCNMUyM5MDAyNjA2MTEjTFQjMTEyMSNQVSM4NiNSVCMxI0NBI0RCQiNaRSNSRTIjWkIjICAgICBSRTIjUEMjMyNGUiM5MDAyNjAwMDEjRlQjMTEwNCNUTyM5MDAyNjA2MTEjVFQjMTEyMSMKWiNWTiMxI1NUIzE3ODA2MTU0MzkjUEkjMCNaSSM5MTQ5NiNUQSMxI0RBIzcwNjI2IzFTIzkwMDI2MDYxMSMxVCMxMTI4I0xTIzkwMDQzNTAwMCNMVCMxMjQxI1BVIzg2I1JUIzEjQ0EjTlJFI1pFI1JFNyNaQiMgICAgIFJFNyNQQyM2I0ZSIzkwMDI2MDYxMSNGVCMxMTI4I1RPIzkwMDI2MDAxNiNUVCMxMTMzIw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      },
+      {
+         "cycle" : {
+            "min" : 1200
+         },
+         "legs" : [
+            {
+               "alternatives" : [
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1505",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T11:33:00+02:00",
+                     "tripId" : "1|90869|1|86|7062026",
+                     "when" : "2026-06-07T11:33:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Senftenberg",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#00b300",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "1967",
+                        "id" : "de-vbb-12072477-r-bahn-re7",
+                        "mode" : "train",
+                        "name" : "RE7",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T11:53:00+02:00",
+                     "tripId" : "1|91458|0|86|7062026",
+                     "when" : "2026-06-07T11:53:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1492",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T12:33:00+02:00",
+                     "tripId" : "1|90879|0|86|7062026",
+                     "when" : "2026-06-07T12:33:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "Cottbus Hbf",
+                     "line" : {
+                        "adminCode" : "800165",
+                        "color" : {
+                           "bg" : "#ffd502",
+                           "fg" : "#000"
+                        },
+                        "fahrtNr" : "1504",
+                        "id" : "de-vbb-11000000-r-bahn-re2-db",
+                        "mode" : "train",
+                        "name" : "RE2",
+                        "operator" : {
+                           "id" : "db-regio-ag",
+                           "name" : "DB Regio AG",
+                           "type" : "operator"
+                        },
+                        "product" : "regional",
+                        "productName" : "RE",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-07T13:33:00+02:00",
+                     "tripId" : "1|90869|2|86|7062026",
+                     "when" : "2026-06-07T13:33:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-07T11:02:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 3600,
+                  "min" : 1200,
+                  "nr" : 4
+               },
+               "departure" : "2026-06-07T10:33:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "1",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "direction" : "Cottbus Hbf",
+               "line" : {
+                  "adminCode" : "800165",
+                  "color" : {
+                     "bg" : "#ffd502",
+                     "fg" : "#000"
+                  },
+                  "fahrtNr" : "1493",
+                  "id" : "de-vbb-11000000-r-bahn-re2-db",
+                  "mode" : "train",
+                  "name" : "RE2",
+                  "operator" : {
+                     "id" : "db-regio-ag",
+                     "name" : "DB Regio AG",
+                     "type" : "operator"
+                  },
+                  "product" : "regional",
+                  "productName" : "RE",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:02:00+02:00",
+               "plannedArrivalPlatform" : "1",
+               "plannedDeparture" : "2026-06-07T10:33:00+02:00",
+               "plannedDeparturePlatform" : "1",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DB Regio",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Königs Wusterhausen Bhf)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "hl",
+                     "text" : "Fahrradmitnahme leicht gemacht: <a href=\"http://www.vbb.de/radimregio\" target=\"_blank\">www.vbb.de/radimregio</a>",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "gw",
+                     "text" : "vehicle-mounted access aid",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "WV",
+                     "text" : "Wifi available",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|90878|0|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T11:02:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T11:02:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:02:00+02:00",
+               "plannedDeparture" : "2026-06-07T11:02:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T12:20:00+02:00",
+               "arrivalDelay" : null,
+               "arrivalPlatform" : null,
+               "arrivalPrognosisType" : "prognosed",
+               "departure" : "2026-06-07T11:42:00+02:00",
+               "departureDelay" : null,
+               "departurePlatform" : "(1)",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260016",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260016"
+                  },
+                  "location" : {
+                     "id" : "900260016",
+                     "latitude" : 52.159297,
+                     "longitude" : 13.650902,
+                     "type" : "location"
+                  },
+                  "name" : "Groß Köris, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260016",
+                  "type" : "stop"
+               },
+               "direction" : "Teupitz, Markt",
+               "line" : {
+                  "adminCode" : "RVS---",
+                  "fahrtNr" : "1034",
+                  "id" : "de-vbb-12061260-bus-727",
+                  "mode" : "bus",
+                  "name" : "727",
+                  "operator" : {
+                     "id" : "regionale-verkehrsgesellschaft-dahme-spreewald-mbh",
+                     "name" : "Regionale Verkehrsgesellschaft Dahme-Spreewald mbH",
+                     "type" : "operator"
+                  },
+                  "product" : "bus",
+                  "productName" : "Bus",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T12:20:00+02:00",
+               "plannedArrivalPlatform" : null,
+               "plannedDeparture" : "2026-06-07T11:42:00+02:00",
+               "plannedDeparturePlatform" : "(1)",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "RVS",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|100062|0|86|7062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$202606071033$202606071102$     RE2$$1$$$$$$§T$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$A=1@O=Groß Köris, Bahnhof@L=900260016@a=128@$202606071142$202606071220$     727$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzgxOTQjSElOIzAjRUNLIzEzNjAyfDEzNTkzfDEzNzAwfDEzNzAwfDB8MHw0ODV8MTM1NjN8MnwwfDJ8MHwwfC0yMTQ3NDgzNjQ4I0dBTSM3MDYyNjEwMzMjClojVk4jMSNTVCMxNzgwNjE1NDM5I1BJIzAjWkkjOTA4NzgjVEEjMCNEQSM3MDYyNiMxUyM5MDAyMDAwMDAjMVQjOTM1I0xTIzkwMDQ3MDAwMCNMVCMxMTU1I1BVIzg2I1JUIzEjQ0EjTlJFI1pFI1JFMiNaQiMgICAgIFJFMiNQQyM2I0ZSIzkwMDEwMDAwMyNGVCMxMDMzI1RPIzkwMDI2MDAwMSNUVCMxMTAyIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzEwMDA2MiNUQSMwI0RBIzcwNjI2IzFTIzkwMDI2MDAwMSMxVCMxMTQyI0xTIzkwMDI2MDczMCNMVCMxMzA2I1BVIzg2I1JUIzEjQ0EjQnVzI1pFIzcyNyNaQiMgICAgIDcyNyNQQyMzI0ZSIzkwMDI2MDAwMSNGVCMxMTQyI1RPIzkwMDI2MDAxNiNUVCMxMjIwIw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      },
+      {
+         "cycle" : {
+            "min" : 1200
+         },
+         "legs" : [
+            {
+               "arrival" : "2026-06-07T11:00:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "3",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 1200,
+                  "nr" : 7
+               },
+               "departure" : "2026-06-07T10:42:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "3",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "direction" : "Flughafen BER",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#992746",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "26448",
+                  "id" : "de-vbb-11000000-s-bahn-s9",
+                  "mode" : "train",
+                  "name" : "S9",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:00:00+02:00",
+               "plannedArrivalPlatform" : "3",
+               "plannedDeparture" : "2026-06-07T10:42:00+02:00",
+               "plannedDeparturePlatform" : "3",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Baumschulenweg (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|3916|8|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T11:00:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T11:00:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:00:00+02:00",
+               "plannedDeparture" : "2026-06-07T11:00:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T11:36:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "2",
+               "arrivalPrognosisType" : "prognosed",
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 1200,
+                  "nr" : 7
+               },
+               "departure" : "2026-06-07T11:06:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "5",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "direction" : "S Königs Wusterhausen Bhf",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#cd9c53",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "19580",
+                  "id" : "de-vbb-11000000-s-bahn-s46",
+                  "mode" : "train",
+                  "name" : "S46",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900191001",
+                  "ids" : {
+                     "ifopt" : "de:11000:900191001"
+                  },
+                  "location" : {
+                     "id" : "900191001",
+                     "latitude" : 52.467582,
+                     "longitude" : 13.489501,
+                     "type" : "location"
+                  },
+                  "name" : "S Baumschulenweg (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : false,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900191001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:36:00+02:00",
+               "plannedArrivalPlatform" : "2",
+               "plannedDeparture" : "2026-06-07T11:06:00+02:00",
+               "plannedDeparturePlatform" : "5",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Baumschulenweg (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Königs Wusterhausen Bhf)",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|1863|8|86|7062026"
+            },
+            {
+               "arrival" : "2026-06-07T11:36:00+02:00",
+               "arrivalDelay" : 0,
+               "departure" : "2026-06-07T11:36:00+02:00",
+               "departureDelay" : 0,
+               "destination" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "distance" : null,
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T11:36:00+02:00",
+               "plannedDeparture" : "2026-06-07T11:36:00+02:00",
+               "public" : true,
+               "walking" : true
+            },
+            {
+               "arrival" : "2026-06-07T12:20:00+02:00",
+               "arrivalDelay" : null,
+               "arrivalPlatform" : null,
+               "arrivalPrognosisType" : "prognosed",
+               "departure" : "2026-06-07T11:42:00+02:00",
+               "departureDelay" : null,
+               "departurePlatform" : "(1)",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900260016",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260016"
+                  },
+                  "location" : {
+                     "id" : "900260016",
+                     "latitude" : 52.159297,
+                     "longitude" : 13.650902,
+                     "type" : "location"
+                  },
+                  "name" : "Groß Köris, Bahnhof",
+                  "products" : {
+                     "bus" : true,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : false,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260016",
+                  "type" : "stop"
+               },
+               "direction" : "Teupitz, Markt",
+               "line" : {
+                  "adminCode" : "RVS---",
+                  "fahrtNr" : "1034",
+                  "id" : "de-vbb-12061260-bus-727",
+                  "mode" : "bus",
+                  "name" : "727",
+                  "operator" : {
+                     "id" : "regionale-verkehrsgesellschaft-dahme-spreewald-mbh",
+                     "name" : "Regionale Verkehrsgesellschaft Dahme-Spreewald mbH",
+                     "type" : "operator"
+                  },
+                  "product" : "bus",
+                  "productName" : "Bus",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900260001",
+                  "ids" : {
+                     "ifopt" : "de:12061:900260001"
+                  },
+                  "location" : {
+                     "id" : "900260001",
+                     "latitude" : 52.296967,
+                     "longitude" : 13.631305,
+                     "type" : "location"
+                  },
+                  "name" : "S Königs Wusterhausen Bhf",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:12061:900260001",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-07T12:20:00+02:00",
+               "plannedArrivalPlatform" : null,
+               "plannedDeparture" : "2026-06-07T11:42:00+02:00",
+               "plannedDeparturePlatform" : "(1)",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "RVS",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|100062|0|86|7062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=S Baumschulenweg (Berlin)@L=900191001@a=128@$202606071042$202606071100$      S9$$1$$$$$$§T$A=1@O=S Baumschulenweg (Berlin)@L=900191001@a=128@$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$202606071106$202606071136$     S46$$1$$$$$$§T$A=1@O=S Königs Wusterhausen Bhf@L=900260001@a=128@$A=1@O=Groß Köris, Bahnhof@L=900260016@a=128@$202606071142$202606071220$     727$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzMjSElOIzAjRUNLIzEzNjAyfDEzNjAyfDEzNzAwfDEzNzAwfDB8MHw0ODV8MTM1NjN8M3wwfDEwfDB8MHwtMjE0NzQ4MzY0OCNHQU0jNzA2MjYxMDQyIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzM5MTYjVEEjOCNEQSM3MDYyNiMxUyM5MDAwMjUzMjEjMVQjMTAxNSNMUyM5MDAyNjAwMDkjTFQjMTEyNiNQVSM4NiNSVCMxI0NBI1MtNyNaRSNTOSNaQiMgICAgICBTOSNQQyMwI0ZSIzkwMDEwMDAwMyNGVCMxMDQyI1RPIzkwMDE5MTAwMSNUVCMxMTAwIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzE4NjMjVEEjOCNEQSM3MDYyNiMxUyM5MDAwMjYyMDcjMVQjMTAzNiNMUyM5MDAyNjAwMDEjTFQjMTEzNiNQVSM4NiNSVCMxI0NBI1MxNiNaRSNTNDYjWkIjICAgICBTNDYjUEMjMCNGUiM5MDAxOTEwMDEjRlQjMTEwNiNUTyM5MDAyNjAwMDEjVFQjMTEzNiMKWiNWTiMxI1NUIzE3ODA2MTU0MzkjUEkjMCNaSSMxMDAwNjIjVEEjMCNEQSM3MDYyNiMxUyM5MDAyNjAwMDEjMVQjMTE0MiNMUyM5MDAyNjA3MzAjTFQjMTMwNiNQVSM4NiNSVCMxI0NBI0J1cyNaRSM3MjcjWkIjICAgICA3MjcjUEMjMyNGUiM5MDAyNjAwMDEjRlQjMTE0MiNUTyM5MDAyNjAwMTYjVFQjMTIyMCM=¶KRCC¶#VE#1#",
+         "type" : "journey"
+      }
+   ],
+   "laterRef" : "3|OF|MT#14#13602#13602#13700#13700#0#0#485#13563#3#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#7062026|RT#100000|US#1|RS#INIT",
+   "realtimeDataUpdatedAt" : 1780780162
+}

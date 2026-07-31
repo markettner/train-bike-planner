@@ -1,0 +1,533 @@
+{
+   "earlierRef" : "3|OB|MT#14#12800#12800#12832#12832#0#0#165#12800#1#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#6062026|RT#212032|US#1|RS#INIT",
+   "journeys" : [
+      {
+         "cycle" : {
+            "min" : 600
+         },
+         "legs" : [
+            {
+               "alternatives" : [
+                  {
+                     "delay" : 0,
+                     "direction" : "S Wannsee Bhf (Berlin)",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23621",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T21:30:00+02:00",
+                     "tripId" : "1|3105|0|86|6062026",
+                     "when" : "2026-06-06T21:30:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23163",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T21:40:00+02:00",
+                     "tripId" : "1|2821|0|86|6062026",
+                     "when" : "2026-06-06T21:40:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23262",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:00:00+02:00",
+                     "tripId" : "1|2772|0|86|6062026",
+                     "when" : "2026-06-06T22:00:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23072",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:20:00+02:00",
+                     "tripId" : "1|2789|0|86|6062026",
+                     "when" : "2026-06-06T22:20:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Wannsee Bhf (Berlin)",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23620",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:30:00+02:00",
+                     "tripId" : "1|3106|0|86|6062026",
+                     "when" : "2026-06-06T22:30:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-06T21:52:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "currentLocation" : {
+                  "latitude" : 52.523378,
+                  "longitude" : 13.40582,
+                  "type" : "location"
+               },
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 600,
+                  "nr" : 9
+               },
+               "departure" : "2026-06-06T21:20:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "4",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900053301",
+                  "ids" : {
+                     "ifopt" : "de:11000:900053301"
+                  },
+                  "location" : {
+                     "id" : "900053301",
+                     "latitude" : 52.421728,
+                     "longitude" : 13.178932,
+                     "type" : "location"
+                  },
+                  "name" : "S Wannsee Bhf (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900053301",
+                  "type" : "stop"
+               },
+               "direction" : "S Potsdam Hauptbahnhof",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#6d61f2",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "23194",
+                  "id" : "de-vbb-11000000-s-bahn-s7",
+                  "mode" : "train",
+                  "name" : "S7",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-06T21:52:00+02:00",
+               "plannedArrivalPlatform" : "1",
+               "plannedDeparture" : "2026-06-06T21:20:00+02:00",
+               "plannedDeparturePlatform" : "4",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Wannsee Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|2753|1|86|6062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=S Wannsee Bhf (Berlin)@L=900053301@a=128@$202606062120$202606062152$      S7$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzEjSElOIzAjRUNLIzEyODAwfDEyODAwfDEyODMyfDEyODMyfDB8MHwxNjV8MTI4MDB8MXwwfDEwfDB8MHwtMjE0NzQ4MzY0OCNHQU0jNjA2MjYyMTIwIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzI3NTMjVEEjMSNEQSM2MDYyNiMxUyM5MDAxNzAwMDQjMVQjMjA1MSNMUyM5MDAyMzA5OTkjTFQjMjIwMiNQVSM4NiNSVCMxI0NBI1MtNyNaRSNTNyNaQiMgICAgICBTNyNQQyMwI0ZSIzkwMDEwMDAwMyNGVCMyMTIwI1RPIzkwMDA1MzMwMSNUVCMyMTUyIw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      },
+      {
+         "cycle" : {
+            "min" : 600
+         },
+         "legs" : [
+            {
+               "alternatives" : [
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23163",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T21:40:00+02:00",
+                     "tripId" : "1|2821|0|86|6062026",
+                     "when" : "2026-06-06T21:40:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23262",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:00:00+02:00",
+                     "tripId" : "1|2772|0|86|6062026",
+                     "when" : "2026-06-06T22:00:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23072",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:20:00+02:00",
+                     "tripId" : "1|2789|0|86|6062026",
+                     "when" : "2026-06-06T22:20:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Wannsee Bhf (Berlin)",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23620",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:30:00+02:00",
+                     "tripId" : "1|3106|0|86|6062026",
+                     "when" : "2026-06-06T22:30:00+02:00"
+                  },
+                  {
+                     "delay" : 0,
+                     "direction" : "S Potsdam Hauptbahnhof",
+                     "line" : {
+                        "adminCode" : "DBS---",
+                        "color" : {
+                           "bg" : "#6d61f2",
+                           "fg" : "#fff"
+                        },
+                        "fahrtNr" : "23261",
+                        "id" : "de-vbb-11000000-s-bahn-s7",
+                        "mode" : "train",
+                        "name" : "S7",
+                        "operator" : {
+                           "id" : "s-bahn-berlin-gmbh",
+                           "name" : "S-Bahn Berlin GmbH",
+                           "type" : "operator"
+                        },
+                        "product" : "suburban",
+                        "productName" : "S",
+                        "public" : true,
+                        "type" : "line"
+                     },
+                     "plannedWhen" : "2026-06-06T22:40:00+02:00",
+                     "tripId" : "1|2772|1|86|6062026",
+                     "when" : "2026-06-06T22:40:00+02:00"
+                  }
+               ],
+               "arrival" : "2026-06-06T22:02:00+02:00",
+               "arrivalDelay" : 0,
+               "arrivalPlatform" : "1",
+               "arrivalPrognosisType" : "prognosed",
+               "currentLocation" : {
+                  "latitude" : 52.503512,
+                  "longitude" : 13.468843,
+                  "type" : "location"
+               },
+               "cycle" : {
+                  "max" : 1200,
+                  "min" : 600,
+                  "nr" : 8
+               },
+               "departure" : "2026-06-06T21:30:00+02:00",
+               "departureDelay" : 0,
+               "departurePlatform" : "4",
+               "departurePrognosisType" : "prognosed",
+               "destination" : {
+                  "id" : "900053301",
+                  "ids" : {
+                     "ifopt" : "de:11000:900053301"
+                  },
+                  "location" : {
+                     "id" : "900053301",
+                     "latitude" : 52.421728,
+                     "longitude" : 13.178932,
+                     "type" : "location"
+                  },
+                  "name" : "S Wannsee Bhf (Berlin)",
+                  "products" : {
+                     "bus" : true,
+                     "express" : true,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : false,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900053301",
+                  "type" : "stop"
+               },
+               "direction" : "S Wannsee Bhf (Berlin)",
+               "line" : {
+                  "adminCode" : "DBS---",
+                  "color" : {
+                     "bg" : "#6d61f2",
+                     "fg" : "#fff"
+                  },
+                  "fahrtNr" : "23621",
+                  "id" : "de-vbb-11000000-s-bahn-s7",
+                  "mode" : "train",
+                  "name" : "S7",
+                  "operator" : {
+                     "id" : "s-bahn-berlin-gmbh",
+                     "name" : "S-Bahn Berlin GmbH",
+                     "type" : "operator"
+                  },
+                  "product" : "suburban",
+                  "productName" : "S",
+                  "public" : true,
+                  "type" : "line"
+               },
+               "origin" : {
+                  "id" : "900100003",
+                  "ids" : {
+                     "ifopt" : "de:11000:900100003"
+                  },
+                  "location" : {
+                     "id" : "900100003",
+                     "latitude" : 52.521508,
+                     "longitude" : 13.411267,
+                     "type" : "location"
+                  },
+                  "name" : "S+U Alexanderplatz Bhf (Berlin)",
+                  "products" : {
+                     "bus" : false,
+                     "express" : false,
+                     "ferry" : false,
+                     "regional" : true,
+                     "suburban" : true,
+                     "subway" : true,
+                     "tram" : false
+                  },
+                  "stationDHID" : "de:11000:900100003",
+                  "type" : "stop"
+               },
+               "plannedArrival" : "2026-06-06T22:02:00+02:00",
+               "plannedArrivalPlatform" : "1",
+               "plannedDeparture" : "2026-06-06T21:30:00+02:00",
+               "plannedDeparturePlatform" : "4",
+               "reachable" : true,
+               "remarks" : [
+                  {
+                     "code" : "OPERATOR",
+                     "text" : "DBS",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S+U Alexanderplatz Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "FK",
+                     "text" : "Bicycle conveyance (S Wannsee Bhf (Berlin))",
+                     "type" : "hint"
+                  },
+                  {
+                     "code" : "text.occup.jny.max.12",
+                     "text" : "medium occupancy expected",
+                     "type" : "hint"
+                  }
+               ],
+               "tripId" : "1|3105|0|86|6062026"
+            }
+         ],
+         "refreshToken" : "¶HKI¶T$A=1@O=S+U Alexanderplatz Bhf (Berlin)@L=900100003@a=128@$A=1@O=S Wannsee Bhf (Berlin)@L=900053301@a=128@$202606062130$202606062202$      S7$$1$$$$$$¶KC¶#VE#2#CF#100#CA#0#CM#0#SICT#0#AM#16417#AM2#0#RT#15#¶KCC¶I1ZFIzEjRVJHIzEjSElOIzAjRUNLIzEyODEwfDEyODEwfDEyODQyfDEyODQyfDB8MHwxNjV8MTI4MDF8MnwwfDEwfDB8MHwtMjE0NzQ4MzY0OCNHQU0jNjA2MjYyMTMwIwpaI1ZOIzEjU1QjMTc4MDYxNTQzOSNQSSMwI1pJIzMxMDUjVEEjMCNEQSM2MDYyNiMxUyM5MDAxNzAwMDQjMVQjMjEwMSNMUyM5MDAwNTMzMDEjTFQjMjIwMiNQVSM4NiNSVCMxI0NBI1MtNyNaRSNTNyNaQiMgICAgICBTNyNQQyMwI0ZSIzkwMDEwMDAwMyNGVCMyMTMwI1RPIzkwMDA1MzMwMSNUVCMyMjAyIw==¶KRCC¶#VE#1#",
+         "type" : "journey"
+      }
+   ],
+   "laterRef" : "3|OF|MT#14#12810#12810#12842#12842#0#0#165#12801#2#0#10#0#0#-2147483648#1#2|PDH#f47e80094294877d1b61ed90a368d27d|RD#6062026|RT#212032|US#1|RS#INIT",
+   "realtimeDataUpdatedAt" : 1780773593
+}
