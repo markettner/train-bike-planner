@@ -1,25 +1,26 @@
 {
   "expectedBerlinBrandenburg": 49,
-  "built": 57,
+  "built": 59,
   "selfHealed": [
-    "RB27",
     "RB73",
     "RB74",
     "RB92",
-    "RB93",
     "RE15"
   ],
   "missing": [
     "RB10",
-    "RB20",
-    "RB23",
-    "RB66",
-    "RE13"
+    "RB34",
+    "RB66"
   ],
   "filtered": [
     {
       "ref": "RB31",
       "name": "RB31: Elsterwerda-Biehla → Dresden, Bahnhof Friedrichstadt",
+      "note": "listed only as out-of-state on Wikipedia"
+    },
+    {
+      "ref": "RE14",
+      "name": "RE14: Falkenberg/E. → Lutherstadt Wittenberg, Hauptbahnhof",
       "note": "listed only as out-of-state on Wikipedia"
     }
   ]
