@@ -9,8 +9,8 @@
     "RE15"
   ],
   "missing": [
+    "RB10",
     "RB20",
-    "RB22",
     "RB23",
     "RB34",
     "RB66",
@@ -19,7 +19,7 @@
   "filtered": [
     {
       "ref": "RB31",
-      "name": "RB31: Elsterwerda-Biehla → Dresden, Bahnhof Neustadt",
+      "name": "RB31: Elsterwerda-Biehla → Cossebaude",
       "note": "listed only as out-of-state on Wikipedia"
     }
   ]
