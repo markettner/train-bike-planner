@@ -36,6 +36,24 @@ npm run build    # build to dist/
 npm run preview  # preview the production build
 ```
 
+### Configuration
+
+The dark basemap comes from [CARTO](https://carto.com/basemaps/apikey/), which now
+requires an API key — without one every tile is stamped "API KEY REQUIRED". Keys are
+free and need no approval.
+
+```bash
+cp .env.example .env.local   # then paste your key into VITE_CARTO_API_KEY
+```
+
+`.env.local` is gitignored. Vite inlines the value at build time, so a client-side
+basemap key is public in the shipped bundle by design; restrict it to your domain in
+the [CARTO basemaps dashboard](https://dashboard.basemaps.carto.com) rather than
+relying on it staying secret. The free tier allows 5M tile requests per calendar month.
+
+A missing key is not fatal: the map still renders (watermarked) and logs a warning, so
+a fresh clone works without any setup. The light basemap is OpenFreeMap and needs no key.
+
 ### Data
 
 ```bash
@@ -65,6 +83,10 @@ to stay readable once bike routes are layered on top.
 Pushes to `main` (and successful data-update runs) trigger the
 [Deploy to GitHub Pages](.github/workflows/deploy.yml) workflow, which builds and
 publishes `dist/` to GitHub Pages.
+
+The build reads the CARTO key from a repository secret named `CARTO_API_KEY`
+(Settings → Secrets and variables → Actions). Without it the deploy still succeeds,
+but the live dark basemap will be watermarked.
 
 ## Project layout
 

@@ -43,9 +43,21 @@ export function initMap(options = {}) {
     zoomControl: false,
   });
 
-  // Dark tile layer (CartoDB Dark Matter)
+  // Dark tile layer (CARTO Dark Matter).
+  // CARTO now requires an API key: unkeyed tiles still load, but come back
+  // stamped "API KEY REQUIRED". The key is baked in at build time from
+  // VITE_CARTO_API_KEY. A missing key is deliberately not fatal — the map
+  // renders (watermarked), so a keyless clone still works for development.
+  const cartoKey = import.meta.env.VITE_CARTO_API_KEY;
+  if (!cartoKey) {
+    console.warn(
+      'VITE_CARTO_API_KEY is not set - CARTO dark basemap tiles will be watermarked. ' +
+      'See the README for how to supply a key.'
+    );
+  }
   const darkTiles = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' +
+      (cartoKey ? `?key=${encodeURIComponent(cartoKey)}` : ''),
     {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · © <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
