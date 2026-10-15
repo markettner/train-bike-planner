@@ -5,7 +5,7 @@
 
 import { isMobile, showRouteList } from './mobileSheet.js';
 import { clearSelection } from './routeList.js';
-import { escapeHtml, formatTime, REDUCED_DATA_TITLE } from '../utils.js';
+import { escapeHtml, formatTime, REDUCED_DATA_TITLE, setHtml } from '../utils.js';
 
 const panel = document.getElementById('route-details-panel');
 const routeNameEl = document.getElementById('route-details-name');
@@ -61,31 +61,31 @@ export function populateTrainTimeline(result, stationName, containerEl) {
   const status = result?.trainStatsStatus || (result?.trainStats ? 'success' : 'failed');
 
   if (status === 'loading') {
-    columnEl.innerHTML = `
+    setHtml(columnEl, `
       <div class="details-loading-container">
         <div class="btn-spinner details-loading-spinner"></div>
         <span>Fetching live train connection details…</span>
       </div>
-    `;
+    `);
     return;
   }
 
   if (status === 'unavailable') {
-    columnEl.innerHTML = `
+    setHtml(columnEl, `
       <div class="details-unavailable-message">
         ⚠️ Live train times are temporarily unavailable (transit API offline).<br>
         The bike route above is unaffected — try again in a few minutes for departures.
       </div>
-    `;
+    `);
     return;
   }
 
   if (status === 'failed' || !trainStats || !trainStats.legs || trainStats.legs.length === 0) {
-    columnEl.innerHTML = `
+    setHtml(columnEl, `
       <div class="details-unavailable-message">
         No train connection found for this station at the selected time.
       </div>
-    `;
+    `);
     return;
   }
 
@@ -223,5 +223,5 @@ export function populateTrainTimeline(result, stationName, containerEl) {
 
   html += `</div>`; // End details-layout
 
-  columnEl.innerHTML = html;
+  setHtml(columnEl, html);
 }

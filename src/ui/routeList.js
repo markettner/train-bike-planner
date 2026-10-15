@@ -8,7 +8,7 @@ import { exportRouteAsGPX } from '../algorithm/gpxExport.js';
 import { selectRoute, toggleRouteVisibility } from './mapRenderer.js';
 import { showRouteDetails } from './routeDetailsPanel.js';
 import { isMobile, showRouteDetails as mobileShowDetails } from './mobileSheet.js';
-import { escapeHtml, formatTime, REDUCED_DATA_TITLE } from '../utils.js';
+import { escapeHtml, formatTime, REDUCED_DATA_TITLE, setHtml } from '../utils.js';
 
 const sidebar = document.getElementById('route-sidebar');
 const routeList = document.getElementById('route-list');
@@ -82,7 +82,7 @@ export function clearSidebar() {
   allResults = [];
   visibilityState = {};
   selectedRouteId = null;
-  routeList.innerHTML = '';
+  setHtml(routeList, '');
   routeCount.textContent = '0 routes found';
   toggleCount.textContent = '0';
   sidebar.classList.add('hidden');
@@ -109,7 +109,7 @@ function renderList(results) {
   const filtered = showSoft ? results : results.filter(r => !r.isSoftMatch);
 
   const sorted = sortResults([...filtered], sortSelect?.value || 'distance');
-  routeList.innerHTML = '';
+  setHtml(routeList, '');
   sorted.forEach(r => routeList.appendChild(buildCard(r)));
 
   routeCount.textContent = `${filtered.length} route${filtered.length !== 1 ? 's' : ''} found`;
@@ -270,7 +270,7 @@ function buildCard(result) {
     `;
   }
 
-  card.innerHTML = `
+  setHtml(card, `
     <div class="route-card-header">
       <div class="route-card-info-row">
         <div class="route-color-dot" style="background:${isLocked ? '#e74c3c' : color};box-shadow:0 0 6px ${isLocked ? '#e74c3c' : color};"></div>
@@ -297,7 +297,7 @@ function buildCard(result) {
         <span>⏱ <strong>${formatTime(result.estimatedTimeMin)}</strong></span>
       </div>
     </div>
-  `;
+  `);
 
   // Card click → select on map + show details
   card.addEventListener('click', (e) => {
@@ -319,7 +319,7 @@ function buildCard(result) {
       const visible = !visibilityState[result.id];
       visibilityState[result.id] = visible;
       toggleRouteVisibility(result.id, visible);
-      visBtn.innerHTML = visible ? eyeOpenSvg() : eyeClosedSvg();
+      setHtml(visBtn, visible ? eyeOpenSvg() : eyeClosedSvg());
       visBtn.title = visible ? 'Hide route' : 'Show route';
       card.style.opacity = visible ? '1' : '0.45';
     });

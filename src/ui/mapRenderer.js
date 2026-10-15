@@ -7,7 +7,7 @@
 import L from 'leaflet';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
-import { escapeHtml, formatTime } from '../utils.js';
+import { escapeHtml, formatTime, setHtml } from '../utils.js';
 import { isMobile } from './mobileSheet.js';
 
 // Color palette (primary + extended)
@@ -101,7 +101,7 @@ export function initMap(options = {}) {
       button.href = '#';
       button.title = 'Toggle Train Lines';
       button.role = 'button';
-      button.innerHTML = '🚆';
+      setHtml(button, '🚆');
 
       L.DomEvent.on(button, 'click', function(e) {
         L.DomEvent.stopPropagation(e);
@@ -247,14 +247,14 @@ export function addBikeRoute(result, colorIndex) {
     const lineNames = escapeHtml(result.lines.map(l => l.name).join(' / '));
     stationMarker.bindPopup(() => {
       const el = document.createElement('div');
-      el.innerHTML = `
+      setHtml(el, `
         <div class="popup-line" style="color:${color}">${lineIds} — ${lineNames}</div>
         <div class="popup-station">${escapeHtml(result.station.name)}</div>
         <div class="popup-stats">
           <span>🚲 ${result.bikeDistanceKm} km bike route</span>
           <span>⏱ ${formatTime(result.estimatedTimeMin)}</span>
         </div>
-      `;
+      `);
       return el;
     }, { maxWidth: 240 });
   };

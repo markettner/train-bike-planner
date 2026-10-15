@@ -2,6 +2,8 @@
  * Shared helpers used across algorithm and UI modules.
  */
 
+import DOMPurify from 'dompurify';
+
 /**
  * Tooltip shown wherever a journey carries `dataQuality: 'reduced'`, i.e. it was
  * served by the Transitous backup backend after the HAFAS mirrors failed.
@@ -41,7 +43,9 @@ export function formatTime(minutes) {
 }
 
 /**
- * Escape a string for safe interpolation into innerHTML.
+ * Escape text so it renders literally inside element content or a double-quoted
+ * attribute, e.g. a station name containing "<" or "&". This is about display
+ * correctness; sanitizing against injected markup happens at the sink (setHtml).
  */
 export function escapeHtml(str) {
   return String(str ?? '')
@@ -49,6 +53,15 @@ export function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * The one place our code assigns innerHTML: sanitizes with DOMPurify first. Use
+ * this instead of assigning el.innerHTML directly, so a value that skipped
+ * escapeHtml can't inject scripts or event handlers.
+ */
+export function setHtml(el, html) {
+  el.innerHTML = DOMPurify.sanitize(html);
 }
 
 /**

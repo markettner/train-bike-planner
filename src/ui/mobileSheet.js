@@ -11,6 +11,8 @@
  * Only active when window.innerWidth <= 768.
  */
 
+import { setHtml } from '../utils.js';
+
 const PEEK_HEIGHT   = 60;   // px — slim Apple Maps-style peek strip
 const HALF_HEIGHT   = 0.50; // fraction of dvh — routes list
 const EXPAND_HEIGHT = 0.92; // fraction of dvh — settings
@@ -78,15 +80,15 @@ export function initMobileSheet({ onNewSearch: _onNewSearch, onBack: _onBack } =
   progressPill = document.createElement('div');
   progressPill.id = 'mobile-progress-pill';
   progressPill.className = 'mobile-progress-pill hidden';
-  progressPill.innerHTML = `
+  setHtml(progressPill, `
     <div class="mpp-spinner"></div>
     <span class="mpp-text">Finding routes…</span>
     <div class="mpp-bar-track"><div class="mpp-bar-fill" style="width:0%"></div></div>
-  `;
+  `);
   document.body.appendChild(progressPill);
 
   // Start at peek — map is visible on load, user taps to configure
-  peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`;
+  setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`);
   showView('settings');
   snapTo(null);
 
@@ -144,7 +146,7 @@ export function initMobileSheet({ onNewSearch: _onNewSearch, onBack: _onBack } =
 /** Show the settings view (used on New Search) */
 export function showSettings() {
   if (!isMobile() || !isInitialized) return;
-  peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`;
+  setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`);
   showView('settings');
   snapTo(EXPAND_HEIGHT); // Always open fully so Find Routes is always visible
 }
@@ -154,9 +156,9 @@ export function showRouteList(count) {
   if (!isMobile() || !isInitialized) return;
   hideProgressPill();
   if (count != null) {
-    peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> <span class="peek-badge">${count}</span>&nbsp;route${count !== 1 ? 's' : ''} found`;
+    setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> <span class="peek-badge">${count}</span>&nbsp;route${count !== 1 ? 's' : ''} found`);
   } else {
-    peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Routes found`;
+    setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Routes found`);
   }
   showView('routes');
   snapTo(HALF_HEIGHT);
@@ -191,14 +193,14 @@ export function expand() {
  */
 export function collapseForLocationPick() {
   if (!isMobile() || !isInitialized) return;
-  peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Tap map to set location`;
+  setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Tap map to set location`);
   snapTo(null);
   document.body.classList.add('picking-location');
 
   // Clear the picking state once the map is clicked (location set)
   const clear = () => {
     document.body.classList.remove('picking-location');
-    peekText.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`;
+    setHtml(peekText, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> Configure route`);
     window.removeEventListener('pointerdown', clear);
   };
   // Give a tick before attaching so the current tap doesn't immediately clear it
@@ -212,7 +214,7 @@ export function collapseForLocationPick() {
  */
 export function startSearchMode() {
   if (!isMobile() || !isInitialized) return;
-  peekText.innerHTML = `<div class="peek-spinner"></div> Searching…`;
+  setHtml(peekText, `<div class="peek-spinner"></div> Searching…`);
   snapTo(null);
   showProgressPill('Finding routes…', 0);
 }
